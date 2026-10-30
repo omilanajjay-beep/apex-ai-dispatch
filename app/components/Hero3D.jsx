@@ -347,7 +347,7 @@ export default function Hero3D() {
       else camera.position.lerp(desiredCamera, 1 - Math.exp(-delta * 3.2));
       if (!reducedMotion) {
         rotor.rotation.z += delta * (mobile ? 2.2 : 2.65);
-        warmFill.position.x = 3.1 + Math.sin(elapsed * 0.22) * 0.18;
+        blueFill.position.x = 3.1 + Math.sin(elapsed * 0.22) * 0.18;
       }
       ledRefs.current.forEach(({ led, glow }, index) => {
         const pulse = reducedMotion ? 1 : 0.78 + Math.sin(elapsed * 2.1 + index * 1.6) * 0.16;
