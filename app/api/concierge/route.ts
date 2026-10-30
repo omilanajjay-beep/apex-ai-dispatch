@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fieldQuestion, isQuestionOrSideRequest, normalizeAnswer, normalizeName, validateIntakeAnswer, type IntakeStep } from '../../lib/intake';
+import { fieldQuestion, isQuestionOrSideRequest, isSmallTalk, normalizeAnswer, normalizeName, parseNameCorrection, validateIntakeAnswer, type IntakeStep } from '../../lib/intake';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,7 +30,7 @@ function sideReply(answer: string, step: IntakeStep, name = '') {
   const lower = answer.toLowerCase();
   const question = fieldQuestion(step, name);
   if (/^(?:hi|hello|hey|hiya|howdy)(?:\s+there)?[!?.\s]*$/.test(lower)) return `Hi there! I’m glad you reached out. ${question}`;
-  if (/how are you/.test(lower)) return `I’m doing well, thanks for asking! I’m Elena, Apex AI’s virtual assistant, here to help coordinate your visit. ${question}`;
+  if (isSmallTalk(answer)) return `I’m doing well, thanks for asking! I’m Elena, Apex AI’s virtual assistant, here to help coordinate your visit. ${question}`;
   if (/are you (?:a|an?)?\s*ai|artificial intelligence/.test(lower)) return `Yes—I’m Elena, Apex AI’s virtual assistant. I’m here to help coordinate a heating and cooling visit. ${question}`;
   if (/what (?:do you|service)|what(?:'s| is) the service/.test(lower)) return `We help arrange heating and cooling service visits, and I’ll gladly get the details started for you. ${question}`;
   if (/cost|price|how much|quote/.test(lower)) return `That’s a fair question. The team can talk through pricing once they’ve reviewed the job; I can’t provide a quote here. ${question}`;
@@ -40,8 +40,8 @@ function sideReply(answer: string, step: IntakeStep, name = '') {
 }
 function intentLabel(answer: string) {
   const lower = answer.toLowerCase();
+  if (isSmallTalk(answer)) return 'smalltalk';
   if (/^(?:hi|hello|hey|hiya|howdy)/.test(lower)) return 'greeting';
-  if (/how are you/.test(lower)) return 'smalltalk';
   if (/are you (?:a|an?)?\s*ai|artificial intelligence/.test(lower)) return 'identity';
   if (/what (?:do you|service)|what(?:'s| is) the service/.test(lower)) return 'service scope';
   if (/cost|price|how much|quote/.test(lower)) return 'pricing scope';
@@ -90,6 +90,13 @@ export async function POST(request: Request) {
   const knownName = step === 'name' ? '' : normalizeName(body.knownName);
   const rawAnswer = clean(body.answer);
   if (rawAnswer.length > (step === 'problem' ? 800 : 240)) return json({ error: 'That reply is too long. Please shorten it and try again.' }, 422);
+  if (step !== 'name') {
+    const correction = parseNameCorrection(rawAnswer);
+    if (correction.matched) {
+      if (!correction.name) return json({ accepted: false, retryStep: 'name', reply: `Sorry about that. ${fieldQuestion('name')}`, complete: false, nextQuestion: '' });
+      return json({ accepted: false, correctedName: correction.name, reply: `Thanks for correcting me, ${correction.name}. ${fieldQuestion(step, correction.name)}`, complete: false, nextQuestion: '' });
+    }
+  }
   const name = step === 'name' ? normalizeName(rawAnswer) : '';
   if (step === 'name' && (!name || isQuestionOrSideRequest(rawAnswer) || /\b(?:furnace|boiler|air\s*condition|hvac|heating|cooling|leak|broken|not working)\b/i.test(rawAnswer))) return json({ accepted: false, reply: await conversationalReply(rawAnswer, step, knownName), complete: false, nextQuestion: '' });
   if (step !== 'name' && isQuestionOrSideRequest(rawAnswer)) return json({ accepted: false, reply: await conversationalReply(rawAnswer, step, knownName), complete: false, nextQuestion: '' });

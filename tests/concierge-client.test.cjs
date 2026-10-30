@@ -135,3 +135,25 @@ test('rejected reply stays on the same field and a reviewed guest name is submit
   await new Promise(setImmediate);
   assert.equal(calls.find((call) => call.url === '/api/book').payload.attendee.name, 'Jay Omilana');
 });
+
+test('a name correction during phone intake keeps the phone question active and uses the corrected name', async () => {
+  const render = createClient();
+  const calls = [];
+  global.fetch = async (url, options = {}) => {
+    const payload = options.body ? JSON.parse(options.body) : null;
+    calls.push({ url: String(url), payload });
+    if (url !== '/api/concierge') throw new Error(`Unexpected request: ${url}`);
+    if (payload.step === 'name') return reply({ accepted: true, value: 'Will Smith', reply: 'Lovely to meet you, Will Smith! And Will Smith, what’s the best phone number for the team to reach you on?', complete: false });
+    if (payload.step === 'phone' && payload.answer === 'My name is not hi is Jummy') return reply({ accepted: false, correctedName: 'Jummy', reply: 'Thanks for correcting me, Jummy. And Jummy, what’s the best phone number for the team to reach you on?', complete: false });
+    if (payload.step === 'phone') return reply({ accepted: true, value: payload.answer, reply: 'Thanks, Jummy. And Jummy, which email address should we use?', complete: false });
+    throw new Error(`Unexpected step: ${payload.step}`);
+  };
+
+  await submit(render, 'Will Smith');
+  await submit(render, 'My name is not hi is Jummy');
+  await submit(render, '5551234567');
+
+  const chatCalls = calls.filter((call) => call.url === '/api/concierge');
+  assert.deepEqual(chatCalls.map((call) => call.payload.step), ['name', 'phone', 'phone']);
+  assert.equal(chatCalls[2].payload.knownName, 'Jummy');
+});

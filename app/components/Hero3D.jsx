@@ -133,8 +133,8 @@ export default function Hero3D() {
     let reducedMotion = reducedMotionQuery.matches;
     reducedMotionRef.current = reducedMotion;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#080D18');
-    scene.fog = new THREE.Fog('#080D18', 10, 27);
+    scene.background = new THREE.Color('#F3F9FB');
+    scene.fog = new THREE.Fog('#F3F9FB', 10, 27);
 
     const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
     camera.position.set(3.6, 2.55, 7.35);
@@ -153,9 +153,9 @@ export default function Hero3D() {
     renderer.domElement.style.display = 'block';
     mount.appendChild(renderer.domElement);
 
-    const ambient = new THREE.HemisphereLight('#e7efff', '#101c35', 1.7);
+    const ambient = new THREE.HemisphereLight('#FFFFFF', '#DCEAF0', 1.7);
     scene.add(ambient);
-    const key = new THREE.DirectionalLight('#d8e5ff', mobile ? 3.1 : 4.0);
+    const key = new THREE.DirectionalLight('#F5FCFF', mobile ? 3.1 : 4.0);
     key.position.set(3.5, 6.8, 5.5);
     key.castShadow = !mobile;
     key.shadow.mapSize.set(2048, 2048);
@@ -165,17 +165,17 @@ export default function Hero3D() {
     key.shadow.camera.bottom = -4;
     key.shadow.bias = -0.0005;
     scene.add(key);
-    const coolRim = new THREE.PointLight('#7197ff', 34, 12, 1.6);
+    const coolRim = new THREE.PointLight('#ADD8E6', 28, 12, 1.6);
     coolRim.position.set(-4.1, 2.5, 2.2);
     scene.add(coolRim);
-    const blueFill = new THREE.PointLight('#244fae', 18, 10, 1.5);
+    const blueFill = new THREE.PointLight('#8FC4D4', 14, 10, 1.5);
     blueFill.position.set(3.1, 3.2, -0.2);
     scene.add(blueFill);
 
     const slateTexture = createSlateTexture();
     const concreteTexture = createConcreteTexture();
-    const slateMaterial = new THREE.MeshStandardMaterial({ color: '#243452', map: slateTexture, roughness: 0.92, metalness: 0.02 });
-    const concreteMaterial = new THREE.MeshStandardMaterial({ color: '#151f33', map: concreteTexture, roughness: 0.84, metalness: 0.02 });
+    const slateMaterial = new THREE.MeshStandardMaterial({ color: '#E3EEF1', map: slateTexture, roughness: 0.92, metalness: 0.02 });
+    const concreteMaterial = new THREE.MeshStandardMaterial({ color: '#F1F6F7', map: concreteTexture, roughness: 0.84, metalness: 0.02 });
     const wall = new THREE.Mesh(new THREE.PlaneGeometry(18, 9), slateMaterial);
     wall.position.set(0, 2.25, -2.15);
     wall.receiveShadow = true;
@@ -191,18 +191,18 @@ export default function Hero3D() {
     returnWall.receiveShadow = true;
     scene.add(returnWall);
 
-    const plinthMaterial = new THREE.MeshStandardMaterial({ color: '#1b2741', roughness: 0.76, metalness: 0.25 });
+    const plinthMaterial = new THREE.MeshStandardMaterial({ color: '#D6E5E9', roughness: 0.76, metalness: 0.25 });
     box(3.45, 0.1, 1.55, plinthMaterial, [0, -0.94, 0.1], scene);
-    const footMaterial = new THREE.MeshStandardMaterial({ color: '#17191b', roughness: 0.58, metalness: 0.45 });
+    const footMaterial = new THREE.MeshStandardMaterial({ color: '#768B91', roughness: 0.58, metalness: 0.45 });
     for (const x of [-1.18, 1.18]) {
       box(0.18, 0.17, 0.18, footMaterial, [x, -0.84, 0.12], scene);
     }
 
-    const aluminum = new THREE.MeshPhysicalMaterial({ color: '#b7c3d8', metalness: 0.88, roughness: 0.27, clearcoat: 0.72, clearcoatRoughness: 0.22 });
-    const fasciaMaterial = new THREE.MeshStandardMaterial({ color: '#0b1322', metalness: 0.58, roughness: 0.3 });
-    const grilleMaterial = new THREE.MeshStandardMaterial({ color: '#657492', metalness: 0.86, roughness: 0.25 });
-    const copperMaterial = new THREE.MeshStandardMaterial({ color: '#5877a8', metalness: 0.82, roughness: 0.23, emissive: '#101d35', emissiveIntensity: 0.12 });
-    const darkMaterial = new THREE.MeshStandardMaterial({ color: '#18243a', metalness: 0.68, roughness: 0.35 });
+    const aluminum = new THREE.MeshPhysicalMaterial({ color: '#F2F7F8', metalness: 0.88, roughness: 0.27, clearcoat: 0.72, clearcoatRoughness: 0.22 });
+    const fasciaMaterial = new THREE.MeshStandardMaterial({ color: '#708992', metalness: 0.58, roughness: 0.3 });
+    const grilleMaterial = new THREE.MeshStandardMaterial({ color: '#829AA1', metalness: 0.86, roughness: 0.25 });
+    const copperMaterial = new THREE.MeshStandardMaterial({ color: '#6C8B95', metalness: 0.82, roughness: 0.23, emissive: '#243E47', emissiveIntensity: 0.12 });
+    const darkMaterial = new THREE.MeshStandardMaterial({ color: '#5F7780', metalness: 0.68, roughness: 0.35 });
 
     // Satin aluminum enclosure and folded edges.
     box(3.1, 2.26, 1.42, aluminum, [0, 0.14, 0.0], scene);
@@ -254,7 +254,7 @@ export default function Hero3D() {
     bladeShape.bezierCurveTo(0.56, 0.72, 0.48, 0.75, 0.37, 0.68);
     bladeShape.bezierCurveTo(0.14, 0.53, 0.045, 0.3, -0.035, 0.045);
     const bladeGeometry = new THREE.ShapeGeometry(bladeShape, 20);
-    const bladeMaterial = new THREE.MeshStandardMaterial({ color: '#bbc0c0', metalness: 0.83, roughness: 0.24, side: THREE.DoubleSide });
+    const bladeMaterial = new THREE.MeshStandardMaterial({ color: '#DCE8EB', metalness: 0.83, roughness: 0.24, side: THREE.DoubleSide });
     for (let i = 0; i < 8; i += 1) {
       const blade = new THREE.Mesh(bladeGeometry, bladeMaterial);
       blade.rotation.z = i * Math.PI / 4;
@@ -276,20 +276,20 @@ export default function Hero3D() {
     }
 
     // Restrained cool-blue status emblem, with no printed branding or text.
-    const ledMaterial = new THREE.MeshBasicMaterial({ color: '#a9c3ff' });
+    const ledMaterial = new THREE.MeshBasicMaterial({ color: '#ADD8E6' });
     ledRefs.current = [-0.95, -0.73, -0.51].map((x, index) => {
       const led = new THREE.Mesh(new THREE.SphereGeometry(0.046, 18, 18), ledMaterial.clone());
-      led.material.color.set(index === 0 ? '#c3d5ff' : '#4774e8');
+      led.material.color.set(index === 0 ? '#DDF3F8' : '#4B8496');
       led.position.set(x, 1.08, 0.79);
       scene.add(led);
-      const glow = new THREE.PointLight(index === 0 ? '#a9c3ff' : '#628cff', 0.5, 0.7, 2);
+      const glow = new THREE.PointLight(index === 0 ? '#ADD8E6' : '#6CA9BC', 0.5, 0.7, 2);
       glow.position.copy(led.position);
       scene.add(glow);
       return { led, glow };
     });
 
     // Fine terrace seams, a raised threshold and distant architectural fins.
-    const seamMaterial = new THREE.MeshStandardMaterial({ color: '#405273', roughness: 0.75 });
+    const seamMaterial = new THREE.MeshStandardMaterial({ color: '#B6CBD1', roughness: 0.75 });
     for (let i = -4; i <= 4; i += 1) {
       const seam = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.004, 7.5), seamMaterial);
       seam.position.set(i * 1.7, -1.013, -0.7);

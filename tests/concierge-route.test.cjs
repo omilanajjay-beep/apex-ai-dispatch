@@ -30,6 +30,33 @@ test('greeting remains at name step and does not advance', async () => {
   const result = await POST(request('name', 'Hi'));
   assert.equal(result.status, 200); assert.equal(result.body.accepted, false); assert.equal(result.body.complete, false); assert.equal(result.body.nextQuestion, ''); assert.match(result.body.reply, /name/i);
 });
+test('a greeting followed by small talk is not accepted as a name', async () => {
+  const result = await POST(request('name', 'Hi how u doing'));
+  assert.equal(result.status, 200);
+  assert.equal(result.body.accepted, false);
+  assert.equal(result.body.complete, false);
+  assert.match(result.body.reply, /doing well|thanks for asking/i);
+  assert.match(result.body.reply, /what name/i);
+});
+test('a correction extracts the actual name and advances to the phone question', async () => {
+  const result = await POST(request('name', 'My name is not hi is Jummy'));
+  assert.equal(result.status, 200);
+  assert.equal(result.body.accepted, true);
+  assert.equal(result.body.value, 'Jummy');
+  assert.match(result.body.reply, /Lovely to meet you, Jummy!/);
+  assert.match(result.body.reply, /phone number/i);
+  assert.doesNotMatch(result.body.reply, /not hi is/i);
+});
+test('an explicit name correction during the phone step updates identity without consuming the phone answer', async () => {
+  const result = await POST(request('phone', 'My name is not hi is Jummy', { knownName: 'Hi how u doing' }));
+  assert.equal(result.status, 200);
+  assert.equal(result.body.accepted, false);
+  assert.equal(result.body.correctedName, 'Jummy');
+  assert.equal(result.body.complete, false);
+  assert.match(result.body.reply, /Thanks for correcting me, Jummy/);
+  assert.match(result.body.reply, /phone number/i);
+  assert.doesNotMatch(result.body.reply, /seven digits|short/i);
+});
 test('real introductions normalize without title-casing, including Unicode', async () => {
   for (const [input, expected] of [["Hi I'm Jay", 'Jay'], [' My name is José  Núñez ', 'José Núñez'], ['单', '单']]) {
     const result = await POST(request('name', input)); assert.equal(result.body.accepted, true); assert.equal(result.body.value, expected);

@@ -5,18 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: '#0A0A0C',
-        paper: '#F0F3F8',
-        sand: '#BAC4D3',
-        blue: '#0052FF',
-        electric: '#0066FF',
+        ink: '#FFFFFF',
+        paper: '#20343C',
+        sand: '#435A63',
+        blue: '#4B8496',
+        electric: '#3F7183',
+        'light-blue': '#ADD8E6',
       },
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'Arial', 'sans-serif'],
         display: ['Playfair Display', 'Georgia', 'serif'],
       },
       boxShadow: {
-        glass: '0 24px 70px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.07)',
+        glass: '0 24px 70px rgba(35,76,89,.12), inset 0 1px rgba(255,255,255,.9)',
       },
     },
   },

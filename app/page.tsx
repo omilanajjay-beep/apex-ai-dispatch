@@ -118,6 +118,11 @@ function Concierge({ open, setOpen }: { open: boolean; setOpen: (next: boolean) 
       }
       const nextMessages: ChatMessage[] = [...withUser, { role: 'assistant', text: data.reply }];
       setMessages(nextMessages);
+      if (typeof data.correctedName === 'string') setIntake((current) => ({ ...current, name: data.correctedName }));
+      if (typeof data.retryStep === 'string' && intakeFields.includes(data.retryStep as IntakeStep)) {
+        setStep(intakeFields.indexOf(data.retryStep as IntakeStep));
+        return;
+      }
       if (!data.accepted) return;
       setIntake((current) => ({ ...current, [field]: data.value }));
       if (data.complete) {
