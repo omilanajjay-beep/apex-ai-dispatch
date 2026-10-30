@@ -31,14 +31,22 @@ test('greeting remains at name step and does not advance', async () => {
   assert.equal(result.status, 200); assert.equal(result.body.accepted, false); assert.equal(result.body.complete, false); assert.equal(result.body.nextQuestion, ''); assert.match(result.body.reply, /name/i);
 });
 test('a greeting followed by small talk is not accepted as a name', async () => {
+  process.env.GROQ_API_KEY = 'test-key';
+  let modelCalls = 0;
+  global.fetch = async () => { modelCalls += 1; throw new Error('social replies should use local copy'); };
   const result = await POST(request('name', 'Hi how u doing'));
   assert.equal(result.status, 200);
   assert.equal(result.body.accepted, false);
   assert.equal(result.body.complete, false);
   assert.match(result.body.reply, /doing well|thanks for asking/i);
   assert.match(result.body.reply, /what name/i);
+  assert.doesNotMatch(result.body.reply, /smalltalk/i);
+  assert.equal(modelCalls, 0);
 });
 test('a correction extracts the actual name and advances to the phone question', async () => {
+  process.env.GROQ_API_KEY = 'test-key';
+  let modelCalls = 0;
+  global.fetch = async () => { modelCalls += 1; throw new Error('name acknowledgements should use local copy'); };
   const result = await POST(request('name', 'My name is not hi is Jummy'));
   assert.equal(result.status, 200);
   assert.equal(result.body.accepted, true);
@@ -46,6 +54,7 @@ test('a correction extracts the actual name and advances to the phone question',
   assert.match(result.body.reply, /Lovely to meet you, Jummy!/);
   assert.match(result.body.reply, /phone number/i);
   assert.doesNotMatch(result.body.reply, /not hi is/i);
+  assert.equal(modelCalls, 0);
 });
 test('an explicit name correction during the phone step updates identity without consuming the phone answer', async () => {
   const result = await POST(request('phone', 'My name is not hi is Jummy', { knownName: 'Hi how u doing' }));
@@ -99,7 +108,7 @@ test('greeting variants and genuine full names are distinguished', async () => {
   }
 });
 
-test('per-turn model prompts never include submitted names, phone numbers, emails or addresses', async () => {
+test('model acknowledgements exclude raw contact details while name acknowledgements stay local', async () => {
   process.env.GROQ_API_KEY = 'test-key';
   const calls = [];
   global.fetch = async (url, options) => {
@@ -109,8 +118,9 @@ test('per-turn model prompts never include submitted names, phone numbers, email
   for (const [step, value] of [['name', 'Jay Omilana'], ['phone', '5551234567'], ['email', 'jay@example.com'], ['address', '123 Private Street']]) {
     const result = await POST(request(step, value));
     assert.equal(result.body.accepted, true);
+    if (step === 'name') assert.match(result.body.reply, /Lovely to meet you, Jay Omilana/);
   }
-  assert.equal(calls.length, 4);
+  assert.equal(calls.length, 3);
   for (const payload of calls) {
     assert.doesNotMatch(JSON.stringify(payload.messages), /Jay|Omilana|5551234567|jay@example|Private Street/);
     assert.equal(payload.max_completion_tokens, 512);

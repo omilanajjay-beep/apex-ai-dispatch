@@ -38,17 +38,6 @@ function sideReply(answer: string, step: IntakeStep, name = '') {
   if (/why.*(need|ask)|need.*(data|information)/.test(lower)) return `I ask so the team can reach you and prepare for the visit. ${question}`;
   return `I can help coordinate heating and cooling visits, and I’ll keep this simple. ${question}`;
 }
-function intentLabel(answer: string) {
-  const lower = answer.toLowerCase();
-  if (isSmallTalk(answer)) return 'smalltalk';
-  if (/^(?:hi|hello|hey|hiya|howdy)/.test(lower)) return 'greeting';
-  if (/are you (?:a|an?)?\s*ai|artificial intelligence/.test(lower)) return 'identity';
-  if (/what (?:do you|service)|what(?:'s| is) the service/.test(lower)) return 'service scope';
-  if (/cost|price|how much|quote/.test(lower)) return 'pricing scope';
-  if (/available|availability|when can/.test(lower)) return 'availability';
-  if (/why.*(need|ask)|need.*(data|information)/.test(lower)) return 'privacy explanation';
-  return 'out of scope question';
-}
 function diagnostic(event: 'missing_key' | 'timeout' | 'failure' | 'empty' | 'success') {
   // Deliberately emit only a fixed event label: no request, category, key, or model text.
   console.info(`[concierge] groq ${event}`);
@@ -67,13 +56,8 @@ async function acknowledge(category: string, fallback: string) {
   } catch (error) { diagnostic(error instanceof DOMException && error.name === 'TimeoutError' ? 'timeout' : 'failure'); return fallback; }
 }
 async function conversationalReply(answer: string, step: IntakeStep, name = '') {
-  const fallback = sideReply(answer, step, name);
-  // Factual answers (especially virtual-assistant identity) must not be replaced
-  // by a model acknowledgement that could omit or contradict the answer.
-  if (!['greeting', 'smalltalk'].includes(intentLabel(answer))) return fallback;
-  const fallbackAck = fallback.replace(` ${fieldQuestion(step, name)}`, '');
-  const ack = await acknowledge(intentLabel(answer), fallbackAck);
-  return `${ack} ${fieldQuestion(step, name)}`.trim();
+  // Keep social replies warm and predictable; do not ask a model to paraphrase them.
+  return sideReply(answer, step, name);
 }
 
 export async function POST(request: Request) {
@@ -112,7 +96,7 @@ export async function POST(request: Request) {
   const fallbacks: Record<Exclude<IntakeStep, 'problem'>, string> = {
     name: `Lovely to meet you, ${value}!`, phone: 'Thanks, I’ve got that.', email: 'Perfect, thank you.', address: 'Thanks, that helps the team plan the visit.',
   };
-  const generatedAck = await acknowledge(labels[step], fallbacks[step]);
+  const generatedAck = step === 'name' ? fallbacks.name : await acknowledge(labels[step], fallbacks[step]);
   const ack = step === 'name'
     ? fallbacks.name
     : knownName
