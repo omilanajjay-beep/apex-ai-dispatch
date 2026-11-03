@@ -239,7 +239,7 @@ export default function Home() {
         <div className="hero-actions"><button className="button button-primary" onClick={() => document.getElementById('system')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}>Explore the system <ArrowUpRight size={15} /></button><button className="quiet-link" onClick={requestSurvey}>Arrange a conversation <ArrowRight size={15} /></button></div>
         <div className="hero-facts"><div><span>01</span><small>Inverter-led<br />performance</small></div><div><span>02</span><small>Designed for<br />quiet operation</small></div><div><span>03</span><small>Serviceable<br />by design</small></div></div>
       </div>
-      <div className="hero-visual"><Hero3D /><div className="visual-label"><span>PRODUCT STUDY / OUTDOOR UNIT</span><span>INTERACTIVE 3D VIEW</span></div></div>
+      <div className="hero-visual"><Hero3D /><div className="visual-label"><span>APEX AI / ON-SITE SERVICE</span><span>SCROLL-DRIVEN WEBGL</span></div></div>
       <a className="scroll-cue" href="#system"><span>SCROLL TO EXPLORE</span><ArrowDownRight size={15} /></a>
     </section>
 

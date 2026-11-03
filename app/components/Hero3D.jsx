@@ -5,38 +5,39 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import * as THREE from 'three';
 
+const HERO_PHOTO = { src: '/apex-ai-technicians.jpg', width: 6.0, aspect: 1280 / 698, center: [0, 0.63, 1.05] };
 const HOTSPOTS = [
-  { id: 'compressor', label: 'Inverter compressor', note: 'Variable output', left: '12%', top: '62%', anchor: [-1.02, 0.16, 0.78], camera: [-3.0, 1.65, 5.5], target: [-0.82, 0.18, 0.12] },
-  { id: 'fan', label: 'AeroBlade fan', note: 'Low-noise airflow', left: '55%', top: '30%', anchor: [-0.15, 0.16, 1.02], camera: [0.65, 1.55, 4.35], target: [0.0, 0.18, 0.62] },
-  { id: 'exchanger', label: 'Copper core exchanger', note: 'Thermal exchange', left: '70%', top: '62%', anchor: [0.92, 0.1, 0.58], camera: [3.0, 1.55, 4.9], target: [0.92, 0.1, 0.48] },
+  { id: 'fan', label: 'AeroBlade fan', note: 'Outdoor unit in the field', left: '18%', top: '60%', anchor: [-2.16, 0.39, HERO_PHOTO.center[2]], target: [-2.16, 0.39, HERO_PHOTO.center[2]], cameraOffset: [0.22, 0.06], zoom: 0.76 },
+  { id: 'compressor', label: 'Technician service', note: 'On-site assessment', left: '63%', top: '44%', anchor: [0.78, 0.75, HERO_PHOTO.center[2]], target: [0.78, 0.75, HERO_PHOTO.center[2]], cameraOffset: [-0.14, 0.08], zoom: 0.78 },
+  { id: 'exchanger', label: 'Service-ready van', note: 'Tools for the visit', left: '48%', top: '28%', anchor: [-0.18, 1.30, HERO_PHOTO.center[2]], target: [-0.18, 1.30, HERO_PHOTO.center[2]], cameraOffset: [0.10, 0.08], zoom: 0.78 },
 ];
 
 gsap.registerPlugin(ScrollTrigger);
 
 const SCROLL_CAMERA_PATH = [
-  { camera: [3.6, 2.55, 7.35], target: [0, 0.2, 0.05] },
-  { camera: [-3.0, 1.65, 5.5], target: [-0.82, 0.18, 0.12] },
-  { camera: [0.65, 1.55, 4.35], target: [0, 0.18, 0.62] },
-  { camera: [3.0, 1.55, 4.9], target: [0.92, 0.1, 0.48] },
-  { camera: [3.6, 2.55, 7.35], target: [0, 0.2, 0.05] },
+  { target: [0, HERO_PHOTO.center[1], HERO_PHOTO.center[2]], offset: [0, 0.08], zoom: 1.00 },
+  { target: [-2.05, 0.38, HERO_PHOTO.center[2]], offset: [0.22, 0.06], zoom: 0.78 },
+  { target: [0.78, 0.75, HERO_PHOTO.center[2]], offset: [-0.14, 0.08], zoom: 0.76 },
+  { target: [-0.18, 1.30, HERO_PHOTO.center[2]], offset: [0.10, 0.08], zoom: 0.78 },
+  { target: [0, HERO_PHOTO.center[1], HERO_PHOTO.center[2]], offset: [0, 0.08], zoom: 1.00 },
 ];
 
-function setScrollPose(progress, camera, target) {
+function setScrollPose(progress, camera, target, fitDistance) {
   const lastSegment = SCROLL_CAMERA_PATH.length - 1;
   const scaled = THREE.MathUtils.clamp(progress, 0, 1) * lastSegment;
   const segment = Math.min(Math.floor(scaled), lastSegment - 1);
   const mix = scaled - segment;
   const from = SCROLL_CAMERA_PATH[segment];
   const to = SCROLL_CAMERA_PATH[segment + 1];
-  camera.set(
-    THREE.MathUtils.lerp(from.camera[0], to.camera[0], mix),
-    THREE.MathUtils.lerp(from.camera[1], to.camera[1], mix),
-    THREE.MathUtils.lerp(from.camera[2], to.camera[2], mix),
-  );
   target.set(
     THREE.MathUtils.lerp(from.target[0], to.target[0], mix),
     THREE.MathUtils.lerp(from.target[1], to.target[1], mix),
     THREE.MathUtils.lerp(from.target[2], to.target[2], mix),
+  );
+  camera.set(
+    target.x + THREE.MathUtils.lerp(from.offset[0], to.offset[0], mix),
+    target.y + THREE.MathUtils.lerp(from.offset[1], to.offset[1], mix),
+    HERO_PHOTO.center[2] + fitDistance * THREE.MathUtils.lerp(from.zoom, to.zoom, mix),
   );
 }
 
@@ -46,7 +47,7 @@ function createSlateTexture() {
   canvas.height = 1536;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-  ctx.fillStyle = '#343638';
+  ctx.fillStyle = '#18243A';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   let seed = 28409;
   const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -88,7 +89,7 @@ function createConcreteTexture() {
   canvas.height = 1024;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-  ctx.fillStyle = '#565551';
+  ctx.fillStyle = '#D2C9B7';
   ctx.fillRect(0, 0, 1024, 1024);
   let seed = 102401;
   const rand = () => { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296; };
@@ -144,11 +145,13 @@ function createCopperCore(scene, copperMaterial) {
 export default function Hero3D() {
   const mountRef = useRef(null);
   const cameraRef = useRef(null);
-  const targetRef = useRef(new THREE.Vector3(0, 0.2, 0.05));
-  const cameraGoalRef = useRef(new THREE.Vector3(3.6, 2.55, 7.35));
+  const targetRef = useRef(new THREE.Vector3(...HERO_PHOTO.center));
+  const cameraGoalRef = useRef(new THREE.Vector3(0, HERO_PHOTO.center[1] + 0.08, HERO_PHOTO.center[2] + 10));
   const scrollProgressRef = useRef({ value: 0 });
   const scrollCameraRef = useRef(new THREE.Vector3());
   const scrollTargetRef = useRef(new THREE.Vector3());
+  const photoFitDistanceRef = useRef(10);
+  const activeHotspotRef = useRef('fan');
   const scrollCameraActiveRef = useRef(true);
   const cameraTweenRef = useRef(null);
   const renderRef = useRef(() => {});
@@ -167,11 +170,11 @@ export default function Hero3D() {
     let reducedMotion = reducedMotionQuery.matches;
     reducedMotionRef.current = reducedMotion;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#160B12');
-    scene.fog = new THREE.Fog('#160B12', 10, 27);
+    scene.background = new THREE.Color('#09111F');
+    scene.fog = new THREE.Fog('#09111F', 10, 27);
 
     const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
-    camera.position.set(3.6, 2.55, 7.35);
+    camera.position.set(0, HERO_PHOTO.center[1] + 0.08, HERO_PHOTO.center[2] + 10);
     camera.lookAt(targetRef.current);
     cameraRef.current = camera;
     cameraGoalRef.current.copy(camera.position);
@@ -187,9 +190,9 @@ export default function Hero3D() {
     renderer.domElement.style.display = 'block';
     mount.appendChild(renderer.domElement);
 
-    const ambient = new THREE.HemisphereLight('#E5E5E5', '#454749', 1.7);
+    const ambient = new THREE.HemisphereLight('#F6F0E5', '#111B2D', 1.65);
     scene.add(ambient);
-    const key = new THREE.DirectionalLight('#E6E6E5', mobile ? 3.1 : 4.0);
+    const key = new THREE.DirectionalLight('#F2E5C5', mobile ? 3.0 : 3.8);
     key.position.set(3.5, 6.8, 5.5);
     key.castShadow = !mobile;
     key.shadow.mapSize.set(2048, 2048);
@@ -199,17 +202,17 @@ export default function Hero3D() {
     key.shadow.camera.bottom = -4;
     key.shadow.bias = -0.0005;
     scene.add(key);
-    const roseRim = new THREE.PointLight('#D2A3B4', 28, 12, 1.6);
-    roseRim.position.set(-4.1, 2.5, 2.2);
-    scene.add(roseRim);
-    const wineFill = new THREE.PointLight('#7E344F', 14, 10, 1.5);
-    wineFill.position.set(3.1, 3.2, -0.2);
-    scene.add(wineFill);
+    const champagneRim = new THREE.PointLight('#D9BD78', 26, 12, 1.6);
+    champagneRim.position.set(-4.1, 2.5, 2.2);
+    scene.add(champagneRim);
+    const ivoryFill = new THREE.PointLight('#F6F0E5', 13, 10, 1.5);
+    ivoryFill.position.set(3.1, 3.2, -0.2);
+    scene.add(ivoryFill);
 
     const slateTexture = createSlateTexture();
     const concreteTexture = createConcreteTexture();
-    const slateMaterial = new THREE.MeshStandardMaterial({ color: '#92969A', map: slateTexture, roughness: 0.92, metalness: 0.02 });
-    const concreteMaterial = new THREE.MeshStandardMaterial({ color: '#A4A6A7', map: concreteTexture, roughness: 0.84, metalness: 0.02 });
+    const slateMaterial = new THREE.MeshStandardMaterial({ color: '#53617A', map: slateTexture, roughness: 0.92, metalness: 0.02 });
+    const concreteMaterial = new THREE.MeshStandardMaterial({ color: '#D8D0C1', map: concreteTexture, roughness: 0.84, metalness: 0.02 });
     const wall = new THREE.Mesh(new THREE.PlaneGeometry(18, 9), slateMaterial);
     wall.position.set(0, 2.25, -2.15);
     wall.receiveShadow = true;
@@ -225,40 +228,42 @@ export default function Hero3D() {
     returnWall.receiveShadow = true;
     scene.add(returnWall);
 
+    const equipmentGroup = new THREE.Group();
+    scene.add(equipmentGroup);
     const plinthMaterial = new THREE.MeshStandardMaterial({ color: '#757A7F', roughness: 0.76, metalness: 0.25 });
-    box(3.45, 0.1, 1.55, plinthMaterial, [0, -0.94, 0.1], scene);
+    box(3.45, 0.1, 1.55, plinthMaterial, [0, -0.94, 0.1], equipmentGroup);
     const footMaterial = new THREE.MeshStandardMaterial({ color: '#41464B', roughness: 0.58, metalness: 0.45 });
     for (const x of [-1.18, 1.18]) {
-      box(0.18, 0.17, 0.18, footMaterial, [x, -0.84, 0.12], scene);
+      box(0.18, 0.17, 0.18, footMaterial, [x, -0.84, 0.12], equipmentGroup);
     }
 
     const aluminum = new THREE.MeshPhysicalMaterial({ color: '#D5D7D9', metalness: 0.88, roughness: 0.27, clearcoat: 0.72, clearcoatRoughness: 0.22 });
     const fasciaMaterial = new THREE.MeshStandardMaterial({ color: '#4D5257', metalness: 0.58, roughness: 0.3 });
     const grilleMaterial = new THREE.MeshStandardMaterial({ color: '#7E858C', metalness: 0.86, roughness: 0.25 });
     const copperMaterial = new THREE.MeshStandardMaterial({ color: '#93999F', metalness: 0.82, roughness: 0.23, emissive: '#303337', emissiveIntensity: 0.12 });
-    const darkMaterial = new THREE.MeshStandardMaterial({ color: '#33373B', metalness: 0.68, roughness: 0.35 });
+    const darkMaterial = new THREE.MeshStandardMaterial({ color: '#18243A', metalness: 0.55, roughness: 0.38 });
 
     // Satin aluminum enclosure and folded edges.
-    box(3.1, 2.26, 1.42, aluminum, [0, 0.14, 0.0], scene);
-    box(3.12, 0.08, 1.47, grilleMaterial, [0, 1.31, 0.0], scene);
-    box(3.12, 0.075, 1.47, grilleMaterial, [0, -1.02, 0.0], scene);
-    box(0.08, 2.16, 1.47, grilleMaterial, [-1.55, 0.14, 0.0], scene);
-    box(0.08, 2.16, 1.47, grilleMaterial, [1.55, 0.14, 0.0], scene);
-    box(2.94, 0.035, 1.28, darkMaterial, [0, 1.365, 0.0], scene, false, false);
+    box(3.1, 2.26, 1.42, aluminum, [0, 0.14, 0.0], equipmentGroup);
+    box(3.12, 0.08, 1.47, grilleMaterial, [0, 1.31, 0.0], equipmentGroup);
+    box(3.12, 0.075, 1.47, grilleMaterial, [0, -1.02, 0.0], equipmentGroup);
+    box(0.08, 2.16, 1.47, grilleMaterial, [-1.55, 0.14, 0.0], equipmentGroup);
+    box(0.08, 2.16, 1.47, grilleMaterial, [1.55, 0.14, 0.0], equipmentGroup);
+    box(2.94, 0.035, 1.28, darkMaterial, [0, 1.365, 0.0], equipmentGroup, false, false);
 
     // Front intake field and subtle repeated ventilation slats.
-    box(2.86, 1.88, 0.055, fasciaMaterial, [0, 0.14, 0.735], scene, false, false);
+    box(2.86, 1.88, 0.055, fasciaMaterial, [0, 0.14, 0.735], equipmentGroup, false, false);
     for (let i = 0; i < 21; i += 1) {
       const y = -0.76 + i * 0.088;
-      box(2.69, 0.017, 0.038, grilleMaterial, [0, y + 0.14, 0.778], scene, false, false);
+      box(2.69, 0.017, 0.038, grilleMaterial, [0, y + 0.14, 0.778], equipmentGroup, false, false);
     }
     for (let i = -5; i <= 5; i += 1) {
-      const rib = box(0.018, 1.9, 0.025, grilleMaterial, [i * 0.24, 0.14, 0.784], scene, false, false);
+      const rib = box(0.018, 1.9, 0.025, grilleMaterial, [i * 0.24, 0.14, 0.784], equipmentGroup, false, false);
       rib.material = grilleMaterial;
     }
 
     // Copper exchanger visible through the open fin field.
-    createCopperCore(scene, copperMaterial);
+    createCopperCore(equipmentGroup, copperMaterial);
 
     // Inverter compressor visible through a slim technical side window.
     const compressor = new THREE.Group();
@@ -273,13 +278,13 @@ export default function Hero3D() {
     const compressorRing = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.025, 10, 40), copperMaterial);
     compressorRing.position.set(-1.02, 0.16, 0.71);
     compressor.add(compressorRing);
-    scene.add(compressor);
+    equipmentGroup.add(compressor);
 
     // Circular grille, motor hub and eight swept blades.
     const fanCenter = new THREE.Vector3(-0.15, 0.16, 0.86);
     const fanRing = new THREE.Mesh(new THREE.TorusGeometry(0.71, 0.027, 14, 72), grilleMaterial);
     fanRing.position.copy(fanCenter);
-    scene.add(fanRing);
+    equipmentGroup.add(fanRing);
     const rotor = new THREE.Group();
     rotor.position.copy(fanCenter);
     const bladeShape = new THREE.Shape();
@@ -294,36 +299,67 @@ export default function Hero3D() {
       blade.rotation.z = i * Math.PI / 4;
       rotor.add(blade);
     }
-    scene.add(rotor);
+    equipmentGroup.add(rotor);
     fanRef.current = rotor;
     const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.19, 0.18, 40), aluminum);
     hub.rotation.x = Math.PI / 2;
     hub.position.copy(fanCenter).setZ(fanCenter.z + 0.065);
-    scene.add(hub);
+    equipmentGroup.add(hub);
     const hubCap = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.19, 32), copperMaterial);
     hubCap.rotation.x = Math.PI / 2;
     hubCap.position.copy(fanCenter).setZ(fanCenter.z + 0.15);
-    scene.add(hubCap);
+    equipmentGroup.add(hubCap);
     for (let i = 0; i < 4; i += 1) {
-      const spoke = box(0.018, 1.36, 0.03, grilleMaterial, [fanCenter.x, fanCenter.y, fanCenter.z + 0.045], scene, false, false);
+      const spoke = box(0.018, 1.36, 0.03, grilleMaterial, [fanCenter.x, fanCenter.y, fanCenter.z + 0.045], equipmentGroup, false, false);
       spoke.rotation.z = i * Math.PI / 4;
     }
 
-    // Restrained rose status emblem, with no printed branding or text.
-    const ledMaterial = new THREE.MeshBasicMaterial({ color: '#E9C0CD' });
+    // Restrained champagne status markers, with no printed branding or text.
+    const ledMaterial = new THREE.MeshBasicMaterial({ color: '#D6B879' });
     ledRefs.current = [-0.95, -0.73, -0.51].map((x, index) => {
       const led = new THREE.Mesh(new THREE.SphereGeometry(0.046, 18, 18), ledMaterial.clone());
-      led.material.color.set(index === 0 ? '#F5E6EB' : '#C69AAA');
+      led.material.color.set(index === 0 ? '#F0DEA8' : '#D6B879');
       led.position.set(x, 1.08, 0.79);
-      scene.add(led);
-      const glow = new THREE.PointLight(index === 0 ? '#E9C0CD' : '#A77288', 0.5, 0.7, 2);
+      equipmentGroup.add(led);
+      const glow = new THREE.PointLight(index === 0 ? '#F0DEA8' : '#D6B879', 0.5, 0.7, 2);
       glow.position.copy(led.position);
-      scene.add(glow);
+      equipmentGroup.add(glow);
       return { led, glow };
     });
 
+    equipmentGroup.visible = false;
+
+    const photoWidth = HERO_PHOTO.width;
+    const photoHeight = photoWidth / HERO_PHOTO.aspect;
+    const photoBackingMaterial = new THREE.MeshStandardMaterial({ color: '#121E33', metalness: 0.28, roughness: 0.42 });
+    const frameMaterial = new THREE.MeshPhysicalMaterial({ color: '#D9BD78', metalness: 0.76, roughness: 0.25, clearcoat: 0.6, clearcoatRoughness: 0.22 });
+    box(photoWidth + 0.13, photoHeight + 0.13, 0.11, photoBackingMaterial, [0, HERO_PHOTO.center[1], HERO_PHOTO.center[2] - 0.09], scene, false, false);
+    const frameThickness = 0.045;
+    const frameDepth = 0.055;
+    const frameZ = HERO_PHOTO.center[2] - 0.02;
+    box(photoWidth + frameThickness * 2, frameThickness, frameDepth, frameMaterial, [0, HERO_PHOTO.center[1] + photoHeight / 2 + frameThickness / 2, frameZ], scene, false, false);
+    box(photoWidth + frameThickness * 2, frameThickness, frameDepth, frameMaterial, [0, HERO_PHOTO.center[1] - photoHeight / 2 - frameThickness / 2, frameZ], scene, false, false);
+    box(frameThickness, photoHeight, frameDepth, frameMaterial, [-photoWidth / 2 - frameThickness / 2, HERO_PHOTO.center[1], frameZ], scene, false, false);
+    box(frameThickness, photoHeight, frameDepth, frameMaterial, [photoWidth / 2 + frameThickness / 2, HERO_PHOTO.center[1], frameZ], scene, false, false);
+    const photoMaterial = new THREE.MeshBasicMaterial({ color: '#18243A', side: THREE.DoubleSide, toneMapped: false, fog: false });
+    const photoPlane = new THREE.Mesh(new THREE.PlaneGeometry(photoWidth, photoHeight), photoMaterial);
+    photoPlane.position.set(...HERO_PHOTO.center);
+    photoPlane.renderOrder = 1;
+    scene.add(photoPlane);
+    let disposed = false;
+    new THREE.TextureLoader().load(HERO_PHOTO.src, (texture) => {
+      if (disposed) { texture.dispose(); return; }
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+      photoMaterial.map = texture;
+      photoMaterial.needsUpdate = true;
+      renderRef.current();
+    }, undefined, () => {
+      if (!disposed) console.error('Unable to load the Apex AI hero photo.');
+    });
+
     // Fine terrace seams, a raised threshold and distant architectural fins.
-    const seamMaterial = new THREE.MeshStandardMaterial({ color: '#64696E', roughness: 0.75 });
+    const seamMaterial = new THREE.MeshStandardMaterial({ color: '#8B7548', roughness: 0.7, metalness: 0.2 });
     for (let i = -4; i <= 4; i += 1) {
       const seam = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.004, 7.5), seamMaterial);
       seam.position.set(i * 1.7, -1.013, -0.7);
@@ -341,6 +377,21 @@ export default function Hero3D() {
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      const fitDistance = HERO_PHOTO.width / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect * 0.9);
+      photoFitDistanceRef.current = fitDistance;
+      if (scrollCameraActiveRef.current) {
+        setScrollPose(scrollProgressRef.current.value, scrollCameraRef.current, scrollTargetRef.current, fitDistance);
+        cameraGoalRef.current.copy(scrollCameraRef.current);
+        targetRef.current.copy(scrollTargetRef.current);
+        camera.position.copy(scrollCameraRef.current);
+      } else {
+        const focused = HOTSPOTS.find((hotspot) => hotspot.id === activeHotspotRef.current);
+        if (focused) {
+          targetRef.current.set(...focused.target);
+          cameraGoalRef.current.set(focused.target[0] + focused.cameraOffset[0], focused.target[1] + focused.cameraOffset[1], HERO_PHOTO.center[2] + fitDistance * focused.zoom);
+          camera.position.copy(cameraGoalRef.current);
+        }
+      }
       renderRef.current();
     };
     resize();
@@ -377,7 +428,6 @@ export default function Hero3D() {
 
     let frame = 0;
     let running = false;
-    let disposed = false;
     let lastRender = 0;
     const clock = new THREE.Clock();
     const desiredCamera = new THREE.Vector3();
@@ -389,7 +439,7 @@ export default function Hero3D() {
       const elapsed = clock.elapsedTime;
       const pointer = pointerRef.current;
       const followsScroll = scrollCameraActiveRef.current && !reducedMotion;
-      if (followsScroll) setScrollPose(scrollProgressRef.current.value, scrollCameraRef.current, scrollTargetRef.current);
+      if (followsScroll) setScrollPose(scrollProgressRef.current.value, scrollCameraRef.current, scrollTargetRef.current, photoFitDistanceRef.current);
       const baseCamera = followsScroll ? scrollCameraRef.current : cameraGoalRef.current;
       const baseTarget = followsScroll ? scrollTargetRef.current : targetRef.current;
       const drift = reducedMotion ? 0 : Math.sin(elapsed * 0.34) * 0.035;
@@ -401,8 +451,8 @@ export default function Hero3D() {
       if (reducedMotion) camera.position.copy(cameraGoalRef.current);
       else camera.position.lerp(desiredCamera, 1 - Math.exp(-delta * 3.2));
       if (!reducedMotion) {
-        rotor.rotation.z += delta * (mobile ? 2.2 : 2.65);
-        wineFill.position.x = 3.1 + Math.sin(elapsed * 0.22) * 0.18;
+        champagneRim.position.x = -4.1 + Math.sin(elapsed * 0.22) * 0.18;
+        ivoryFill.position.x = 3.1 + Math.sin(elapsed * 0.18) * 0.14;
       }
       ledRefs.current.forEach(({ led, glow }, index) => {
         const pulse = reducedMotion ? 1 : 0.78 + Math.sin(elapsed * 2.1 + index * 1.6) * 0.16;
@@ -509,7 +559,6 @@ export default function Hero3D() {
       });
       renderer.dispose();
       renderer.domElement.remove();
-      mount.replaceChildren();
       ledRefs.current = [];
       hotspotRefs.current = {};
       fanRef.current = null;
@@ -520,25 +569,30 @@ export default function Hero3D() {
     const camera = cameraRef.current;
     if (!camera) return;
     setActive(hotspot.id);
+    activeHotspotRef.current = hotspot.id;
+    scrollCameraActiveRef.current = false;
     cameraTweenRef.current?.kill();
+    const fitDistance = photoFitDistanceRef.current || 10;
+    const cameraX = hotspot.target[0] + hotspot.cameraOffset[0];
+    const cameraY = hotspot.target[1] + hotspot.cameraOffset[1];
+    const cameraZ = HERO_PHOTO.center[2] + fitDistance * hotspot.zoom;
     if (reducedMotionRef.current) {
-      cameraGoalRef.current.set(...hotspot.camera);
+      cameraGoalRef.current.set(cameraX, cameraY, cameraZ);
       targetRef.current.set(...hotspot.target);
       camera.position.copy(cameraGoalRef.current);
       camera.lookAt(targetRef.current);
       renderRef.current();
       return;
     }
-    scrollCameraActiveRef.current = false;
     cameraTweenRef.current = gsap.timeline({ defaults: { duration: 1.35, ease: 'power3.inOut' } })
-      .to(cameraGoalRef.current, { x: hotspot.camera[0], y: hotspot.camera[1], z: hotspot.camera[2] }, 0)
+      .to(cameraGoalRef.current, { x: cameraX, y: cameraY, z: cameraZ }, 0)
       .to(targetRef.current, { x: hotspot.target[0], y: hotspot.target[1], z: hotspot.target[2] }, 0);
   };
 
   return <div className="scene-wrap">
-    <div className="scene-canvas" ref={mountRef} />
+    <div className="scene-canvas" ref={mountRef}><img className="scene-poster" src={HERO_PHOTO.src} alt="Technicians servicing an outdoor HVAC unit beside a service van" /></div>
     <div className="scene-vignette" aria-hidden="true" />
-    <div className="scene-hotspots" aria-label="Explore equipment components">
+    <div className="scene-hotspots" aria-label="Explore Apex AI field service">
       {HOTSPOTS.map((hotspot) => <button
         key={hotspot.id}
         className={`hotspot ${active === hotspot.id ? 'active' : ''}`}
@@ -549,6 +603,6 @@ export default function Hero3D() {
         aria-label={`Focus on ${hotspot.label}`}
       ><span className="hotspot-marker" /><span className="hotspot-copy"><b>{hotspot.label}</b><small>{hotspot.note}</small></span></button>)}
     </div>
-    <div className="scene-scale" aria-hidden="true"><span>ARCHITECTURAL STUDY</span><span>DRAG-FREE / SELECT A COMPONENT</span></div>
+    <div className="scene-scale" aria-hidden="true"><span>APEX AI / FIELD SERVICE</span><span>SCROLL TO EXPLORE / SELECT A MOMENT</span></div>
   </div>;
 }
