@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import * as THREE from 'three';
 
 const HOTSPOTS = [
@@ -9,6 +10,35 @@ const HOTSPOTS = [
   { id: 'fan', label: 'AeroBlade fan', note: 'Low-noise airflow', left: '55%', top: '30%', anchor: [-0.15, 0.16, 1.02], camera: [0.65, 1.55, 4.35], target: [0.0, 0.18, 0.62] },
   { id: 'exchanger', label: 'Copper core exchanger', note: 'Thermal exchange', left: '70%', top: '62%', anchor: [0.92, 0.1, 0.58], camera: [3.0, 1.55, 4.9], target: [0.92, 0.1, 0.48] },
 ];
+
+gsap.registerPlugin(ScrollTrigger);
+
+const SCROLL_CAMERA_PATH = [
+  { camera: [3.6, 2.55, 7.35], target: [0, 0.2, 0.05] },
+  { camera: [-3.0, 1.65, 5.5], target: [-0.82, 0.18, 0.12] },
+  { camera: [0.65, 1.55, 4.35], target: [0, 0.18, 0.62] },
+  { camera: [3.0, 1.55, 4.9], target: [0.92, 0.1, 0.48] },
+  { camera: [3.6, 2.55, 7.35], target: [0, 0.2, 0.05] },
+];
+
+function setScrollPose(progress, camera, target) {
+  const lastSegment = SCROLL_CAMERA_PATH.length - 1;
+  const scaled = THREE.MathUtils.clamp(progress, 0, 1) * lastSegment;
+  const segment = Math.min(Math.floor(scaled), lastSegment - 1);
+  const mix = scaled - segment;
+  const from = SCROLL_CAMERA_PATH[segment];
+  const to = SCROLL_CAMERA_PATH[segment + 1];
+  camera.set(
+    THREE.MathUtils.lerp(from.camera[0], to.camera[0], mix),
+    THREE.MathUtils.lerp(from.camera[1], to.camera[1], mix),
+    THREE.MathUtils.lerp(from.camera[2], to.camera[2], mix),
+  );
+  target.set(
+    THREE.MathUtils.lerp(from.target[0], to.target[0], mix),
+    THREE.MathUtils.lerp(from.target[1], to.target[1], mix),
+    THREE.MathUtils.lerp(from.target[2], to.target[2], mix),
+  );
+}
 
 function createSlateTexture() {
   const canvas = document.createElement('canvas');
@@ -116,6 +146,10 @@ export default function Hero3D() {
   const cameraRef = useRef(null);
   const targetRef = useRef(new THREE.Vector3(0, 0.2, 0.05));
   const cameraGoalRef = useRef(new THREE.Vector3(3.6, 2.55, 7.35));
+  const scrollProgressRef = useRef({ value: 0 });
+  const scrollCameraRef = useRef(new THREE.Vector3());
+  const scrollTargetRef = useRef(new THREE.Vector3());
+  const scrollCameraActiveRef = useRef(true);
   const cameraTweenRef = useRef(null);
   const renderRef = useRef(() => {});
   const pointerRef = useRef(new THREE.Vector2());
@@ -133,8 +167,8 @@ export default function Hero3D() {
     let reducedMotion = reducedMotionQuery.matches;
     reducedMotionRef.current = reducedMotion;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#151617');
-    scene.fog = new THREE.Fog('#151617', 10, 27);
+    scene.background = new THREE.Color('#160B12');
+    scene.fog = new THREE.Fog('#160B12', 10, 27);
 
     const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
     camera.position.set(3.6, 2.55, 7.35);
@@ -165,12 +199,12 @@ export default function Hero3D() {
     key.shadow.camera.bottom = -4;
     key.shadow.bias = -0.0005;
     scene.add(key);
-    const coolRim = new THREE.PointLight('#B8BDC2', 28, 12, 1.6);
-    coolRim.position.set(-4.1, 2.5, 2.2);
-    scene.add(coolRim);
-    const blueFill = new THREE.PointLight('#9DA3A9', 14, 10, 1.5);
-    blueFill.position.set(3.1, 3.2, -0.2);
-    scene.add(blueFill);
+    const roseRim = new THREE.PointLight('#D2A3B4', 28, 12, 1.6);
+    roseRim.position.set(-4.1, 2.5, 2.2);
+    scene.add(roseRim);
+    const wineFill = new THREE.PointLight('#7E344F', 14, 10, 1.5);
+    wineFill.position.set(3.1, 3.2, -0.2);
+    scene.add(wineFill);
 
     const slateTexture = createSlateTexture();
     const concreteTexture = createConcreteTexture();
@@ -275,14 +309,14 @@ export default function Hero3D() {
       spoke.rotation.z = i * Math.PI / 4;
     }
 
-    // Restrained cool-blue status emblem, with no printed branding or text.
-    const ledMaterial = new THREE.MeshBasicMaterial({ color: '#B8BDC2' });
+    // Restrained rose status emblem, with no printed branding or text.
+    const ledMaterial = new THREE.MeshBasicMaterial({ color: '#E9C0CD' });
     ledRefs.current = [-0.95, -0.73, -0.51].map((x, index) => {
       const led = new THREE.Mesh(new THREE.SphereGeometry(0.046, 18, 18), ledMaterial.clone());
-      led.material.color.set(index === 0 ? '#D4D8DC' : '#858C93');
+      led.material.color.set(index === 0 ? '#F5E6EB' : '#C69AAA');
       led.position.set(x, 1.08, 0.79);
       scene.add(led);
-      const glow = new THREE.PointLight(index === 0 ? '#B8BDC2' : '#969DA4', 0.5, 0.7, 2);
+      const glow = new THREE.PointLight(index === 0 ? '#E9C0CD' : '#A77288', 0.5, 0.7, 2);
       glow.position.copy(led.position);
       scene.add(glow);
       return { led, glow };
@@ -313,6 +347,23 @@ export default function Hero3D() {
     const onResize = () => resize();
     window.addEventListener('resize', onResize, { passive: true });
     const interactionRoot = mount.parentElement || mount;
+    const heroSection = mount.closest('.hero');
+    const scrollTimeline = gsap.timeline({
+      scrollTrigger: {
+        trigger: heroSection,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 0.85,
+        invalidateOnRefresh: true,
+        onUpdate: () => {
+          if (reducedMotion) return;
+          scrollCameraActiveRef.current = true;
+          cameraTweenRef.current?.kill();
+          cameraTweenRef.current = null;
+        },
+      },
+    });
+    scrollTimeline.to(scrollProgressRef.current, { value: 1, ease: 'none' });
     const onPointerMove = (event) => {
       if (mobile || reducedMotion) return;
       const bounds = interactionRoot.getBoundingClientRect();
@@ -337,17 +388,21 @@ export default function Hero3D() {
       const delta = Math.min(clock.getDelta(), 0.05);
       const elapsed = clock.elapsedTime;
       const pointer = pointerRef.current;
+      const followsScroll = scrollCameraActiveRef.current && !reducedMotion;
+      if (followsScroll) setScrollPose(scrollProgressRef.current.value, scrollCameraRef.current, scrollTargetRef.current);
+      const baseCamera = followsScroll ? scrollCameraRef.current : cameraGoalRef.current;
+      const baseTarget = followsScroll ? scrollTargetRef.current : targetRef.current;
       const drift = reducedMotion ? 0 : Math.sin(elapsed * 0.34) * 0.035;
       desiredCamera.set(
-        cameraGoalRef.current.x + (reducedMotion || mobile ? 0 : pointer.x * 0.2) + drift,
-        cameraGoalRef.current.y + (reducedMotion || mobile ? 0 : pointer.y * 0.11) + (reducedMotion ? 0 : Math.sin(elapsed * 0.47) * 0.018),
-        cameraGoalRef.current.z + (reducedMotion || mobile ? 0 : pointer.x * 0.045),
+        baseCamera.x + (reducedMotion || mobile ? 0 : pointer.x * 0.2) + drift,
+        baseCamera.y + (reducedMotion || mobile ? 0 : pointer.y * 0.11) + (reducedMotion ? 0 : Math.sin(elapsed * 0.47) * 0.018),
+        baseCamera.z + (reducedMotion || mobile ? 0 : pointer.x * 0.045),
       );
       if (reducedMotion) camera.position.copy(cameraGoalRef.current);
       else camera.position.lerp(desiredCamera, 1 - Math.exp(-delta * 3.2));
       if (!reducedMotion) {
         rotor.rotation.z += delta * (mobile ? 2.2 : 2.65);
-        blueFill.position.x = 3.1 + Math.sin(elapsed * 0.22) * 0.18;
+        wineFill.position.x = 3.1 + Math.sin(elapsed * 0.22) * 0.18;
       }
       ledRefs.current.forEach(({ led, glow }, index) => {
         const pulse = reducedMotion ? 1 : 0.78 + Math.sin(elapsed * 2.1 + index * 1.6) * 0.16;
@@ -355,9 +410,9 @@ export default function Hero3D() {
         glow.intensity = 0.35 + pulse * 0.34;
       });
       desiredLook.set(
-        targetRef.current.x + (reducedMotion || mobile ? 0 : pointer.x * 0.035),
-        targetRef.current.y + (reducedMotion || mobile ? 0 : pointer.y * 0.025),
-        targetRef.current.z,
+        baseTarget.x + (reducedMotion || mobile ? 0 : pointer.x * 0.035),
+        baseTarget.y + (reducedMotion || mobile ? 0 : pointer.y * 0.025),
+        baseTarget.z,
       );
       camera.lookAt(desiredLook);
       HOTSPOTS.forEach((hotspot) => {
@@ -435,6 +490,8 @@ export default function Hero3D() {
       interactionRoot.removeEventListener('pointermove', onPointerMove);
       interactionRoot.removeEventListener('pointerleave', onPointerLeave);
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      scrollTimeline.scrollTrigger?.kill();
+      scrollTimeline.kill();
       if (reducedMotionQuery.removeEventListener) reducedMotionQuery.removeEventListener('change', onReducedMotionChange);
       else reducedMotionQuery.removeListener?.(onReducedMotionChange);
       visibilityObserver.disconnect();
@@ -472,6 +529,7 @@ export default function Hero3D() {
       renderRef.current();
       return;
     }
+    scrollCameraActiveRef.current = false;
     cameraTweenRef.current = gsap.timeline({ defaults: { duration: 1.35, ease: 'power3.inOut' } })
       .to(cameraGoalRef.current, { x: hotspot.camera[0], y: hotspot.camera[1], z: hotspot.camera[2] }, 0)
       .to(targetRef.current, { x: hotspot.target[0], y: hotspot.target[1], z: hotspot.target[2] }, 0);

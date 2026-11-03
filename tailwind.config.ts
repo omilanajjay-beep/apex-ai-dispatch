@@ -5,12 +5,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: '#0A0A0A',
-        paper: '#E7E8E9',
-        sand: '#B9BCBF',
-        blue: '#BEC2C6',
-        electric: '#E0E2E4',
-        'light-blue': '#A4A9AE',
+        ink: '#10080D',
+        paper: '#F5E6EB',
+        sand: '#D0B3BE',
+        plum: '#1C1017',
+        wine: '#7E344F',
+        rose: '#E9C0CD',
+        mauve: '#C69AAA',
       },
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'Arial', 'sans-serif'],
