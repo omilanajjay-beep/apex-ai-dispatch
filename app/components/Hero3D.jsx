@@ -329,35 +329,6 @@ export default function Hero3D() {
 
     equipmentGroup.visible = false;
 
-    const photoWidth = HERO_PHOTO.width;
-    const photoHeight = photoWidth / HERO_PHOTO.aspect;
-    const photoBackingMaterial = new THREE.MeshStandardMaterial({ color: '#121E33', metalness: 0.28, roughness: 0.42 });
-    const frameMaterial = new THREE.MeshPhysicalMaterial({ color: '#D9BD78', metalness: 0.76, roughness: 0.25, clearcoat: 0.6, clearcoatRoughness: 0.22 });
-    box(photoWidth + 0.13, photoHeight + 0.13, 0.11, photoBackingMaterial, [0, HERO_PHOTO.center[1], HERO_PHOTO.center[2] - 0.09], scene, false, false);
-    const frameThickness = 0.045;
-    const frameDepth = 0.055;
-    const frameZ = HERO_PHOTO.center[2] - 0.02;
-    box(photoWidth + frameThickness * 2, frameThickness, frameDepth, frameMaterial, [0, HERO_PHOTO.center[1] + photoHeight / 2 + frameThickness / 2, frameZ], scene, false, false);
-    box(photoWidth + frameThickness * 2, frameThickness, frameDepth, frameMaterial, [0, HERO_PHOTO.center[1] - photoHeight / 2 - frameThickness / 2, frameZ], scene, false, false);
-    box(frameThickness, photoHeight, frameDepth, frameMaterial, [-photoWidth / 2 - frameThickness / 2, HERO_PHOTO.center[1], frameZ], scene, false, false);
-    box(frameThickness, photoHeight, frameDepth, frameMaterial, [photoWidth / 2 + frameThickness / 2, HERO_PHOTO.center[1], frameZ], scene, false, false);
-    const photoMaterial = new THREE.MeshBasicMaterial({ color: '#18243A', side: THREE.DoubleSide, toneMapped: false, fog: false });
-    const photoPlane = new THREE.Mesh(new THREE.PlaneGeometry(photoWidth, photoHeight), photoMaterial);
-    photoPlane.position.set(...HERO_PHOTO.center);
-    photoPlane.renderOrder = 1;
-    scene.add(photoPlane);
-    let disposed = false;
-    new THREE.TextureLoader().load(HERO_PHOTO.src, (texture) => {
-      if (disposed) { texture.dispose(); return; }
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
-      photoMaterial.map = texture;
-      photoMaterial.needsUpdate = true;
-      renderRef.current();
-    }, undefined, () => {
-      if (!disposed) console.error('Unable to load the Apex AI hero photo.');
-    });
-
     // Fine terrace seams, a raised threshold and distant architectural fins.
     const seamMaterial = new THREE.MeshStandardMaterial({ color: '#8B7548', roughness: 0.7, metalness: 0.2 });
     for (let i = -4; i <= 4; i += 1) {
@@ -590,8 +561,9 @@ export default function Hero3D() {
   };
 
   return <div className="scene-wrap">
-    <div className="scene-canvas" ref={mountRef}><img className="scene-poster" src={HERO_PHOTO.src} alt="Technicians servicing an outdoor HVAC unit beside a service van" /></div>
+    <div className="scene-canvas" ref={mountRef} />
     <div className="scene-vignette" aria-hidden="true" />
+    <img className="scene-poster" src={HERO_PHOTO.src} alt="Technicians servicing an outdoor HVAC unit beside a service van" />
     <div className="scene-hotspots" aria-label="Explore Apex AI field service">
       {HOTSPOTS.map((hotspot) => <button
         key={hotspot.id}

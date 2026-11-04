@@ -431,5 +431,5 @@ input[type='range']::-moz-range-thumb { border-color: #142035; background: #F0DE
 .directory-note { border-color: rgba(214,184,121,.22); background: rgba(214,184,121,.04); }
 .closing-band { background: radial-gradient(ellipse at 5% 90%, rgba(214,184,121,.08), transparent 45%); }
 .nav-links a:hover, .nav-links a[aria-current='location'] { color: var(--gold-accent-bright); }
-.scene-poster { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: contain; background: #08111E; }
+.scene-poster { position: absolute; top: 50%; left: 50%; z-index: 2; width: 92%; max-height: 78%; object-fit: contain; transform: translate(-50%, -50%); border: 3px solid var(--gold-accent); background: #08111E; box-shadow: 0 18px 48px rgba(0,0,0,.32); filter: brightness(1.1) saturate(1.03); pointer-events: none; }
 .scene-canvas canvas { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; }
