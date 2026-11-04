@@ -574,7 +574,7 @@ export default function Hero3D() {
         onClick={() => focusHotspot(hotspot)}
         aria-pressed={active === hotspot.id}
         aria-label={`Focus on ${hotspot.label}`}
-      ><span className="hotspot-marker" /><span className="hotspot-copy"><b>{hotspot.label}</b><small>{hotspot.note}</small></span></button>)}
+      />)}
     </div>
     <div className="scene-scale" aria-hidden="true"><span>APEX AI / FIELD SERVICE</span><span>SCROLL TO EXPLORE / SELECT A MOMENT</span></div>
   </div>;

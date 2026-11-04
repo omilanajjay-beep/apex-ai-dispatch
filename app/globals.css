@@ -68,14 +68,9 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .scene-wrap, .scene-canvas { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 680px; }
 .scene-canvas canvas { display: block; width: 100%; height: 100%; }
 .scene-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(11,12,14,.17), transparent 22%, transparent 78%, rgba(11,12,14,.18)), linear-gradient(0deg, rgba(11,12,14,.48), transparent 26%); }
-.scene-hotspots { position: absolute; inset: 0; z-index: 3; }
-.hotspot { position: absolute; display: flex; align-items: flex-start; gap: 10px; max-width: 230px; padding: 0; border: 0; background: none; text-align: left; transform: translate(-7px, -6px); }
-.hotspot-marker { width: 11px; height: 11px; flex: 0 0 11px; margin-top: 1px; border: 1px solid var(--gold-accent); border-radius: 50%; background: rgba(11,12,14,.62); box-shadow: 0 0 0 5px rgba(180,184,188,.13); transition: background .25s ease, box-shadow .25s ease, transform .25s ease; }
-.hotspot-copy { opacity: .68; transition: opacity .25s ease; }
-.hotspot-copy b { display: block; color: #f0f3f8; font-size: 9px; font-weight: 500; white-space: nowrap; text-shadow: 0 1px 10px #000; }
-.hotspot-copy small { display: block; margin-top: 5px; color: var(--gold-accent-bright); font: 8px var(--mono); letter-spacing: .04em; text-shadow: 0 1px 10px #000; }
-.hotspot:hover .hotspot-copy, .hotspot.active .hotspot-copy { opacity: 1; }
-.hotspot.active .hotspot-marker { background: var(--gold-accent); transform: scale(1.08); box-shadow: 0 0 0 5px rgba(180,184,188,.22), 0 0 22px rgba(180,184,188,.76); }
+.scene-hotspots { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.hotspot { position: absolute; display: block; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; text-align: left; transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer; }
+.hotspot:focus-visible { outline: 1px solid var(--gold-accent-bright); outline-offset: 3px; border-radius: 50%; }
 .scene-scale, .visual-label { position: absolute; right: 5%; bottom: 25px; left: 5%; z-index: 3; display: flex; align-items: center; justify-content: space-between; color: rgba(240,243,248,.65); font: 8px var(--mono); letter-spacing: .12em; }
 .visual-label { display: none; }
 .scroll-cue { position: absolute; bottom: 25px; left: 5.4vw; display: inline-flex; align-items: center; gap: 12px; color: var(--muted); font: 8px var(--mono); letter-spacing: .12em; }
@@ -274,9 +269,6 @@ input[type='range']::-moz-range-thumb { width: 11px; height: 11px; border: 2px s
   .hero-facts small { font-size: 7px; }
   .hero-visual { min-height: 470px; }
   .scene-wrap, .scene-canvas { min-height: 470px; }
-  .hotspot { max-width: 140px; gap: 7px; }
-  .hotspot-copy b { font-size: 7px; white-space: normal; }
-  .hotspot-copy small { font-size: 7px; }
   .scene-scale { bottom: 17px; font-size: 6px; }
   .manifesto { font-size: 7px; column-gap: 10px; }
   .section, .team-section, .reviews-section { padding: 80px 7vw; }
@@ -308,11 +300,14 @@ input[type='range']::-moz-range-thumb { width: 11px; height: 11px; border: 2px s
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  .scene-poster { animation: none !important; transform: translate(-50%, -50%) scale(1) !important; }
 }
 
 /* A quiet architectural layer around the single interactive product study. */
 .page-transition { animation: page-arrive .45s ease-out both; }
 @keyframes page-arrive { from { opacity: .65; } to { opacity: 1; } }
+.scene-poster { animation: hero-photo-breathe 24s ease-in-out infinite; will-change: transform; }
+@keyframes hero-photo-breathe { 0%, 100% { transform: translate(-50.7%, -50.3%) scale(1.035); } 50% { transform: translate(-49.5%, -49.7%) scale(1.075); } }
 .nav-links a { position: relative; padding-block: 8px; }
 .nav-links a::after { content: ''; position: absolute; right: 0; bottom: 0; left: 0; height: 1px; background: var(--gold-accent); transform: scaleX(0); transform-origin: left; transition: transform .3s ease; }
 .nav-links a:hover::after, .nav-links a[aria-current='location']::after { transform: scaleX(1); }
@@ -388,12 +383,6 @@ input[type='range']::-moz-range-thumb { width: 11px; height: 11px; border: 2px s
 .button-primary:hover, .button-light:hover { background: #F0DEA8; border-color: #F0DEA8; color: #08111E; }
 .hero-visual { background: radial-gradient(ellipse at 50% 42%, #1D2A40 0%, #111E31 48%, #08111E 100%); box-shadow: inset 1px 0 rgba(214,184,121,.1); }
 .scene-vignette { background: linear-gradient(90deg, rgba(8,17,30,.12), transparent 22%, transparent 78%, rgba(8,17,30,.16)), linear-gradient(0deg, rgba(8,17,30,.3), transparent 26%); }
-.hotspot-marker { border-color: #F0DEA8; background: rgba(8,17,30,.76); box-shadow: 0 0 0 5px rgba(214,184,121,.12); }
-.hotspot.active .hotspot-marker { background: #D6B879; box-shadow: 0 0 0 5px rgba(214,184,121,.2), 0 0 16px rgba(214,184,121,.4); }
-.hotspot-copy { opacity: 1; }
-.scene-hotspots .hotspot-copy { display: none; }
-.hotspot-copy b { color: #F6F1E7; text-shadow: 0 1px 5px #08111E, 0 0 10px #08111E; }
-.hotspot-copy small { color: #F0DEA8; text-shadow: 0 1px 5px #08111E, 0 0 10px #08111E; }
 .scene-scale, .visual-label { color: #E0D4B8; text-shadow: 0 1px 6px #08111E; }
 .manifesto { color: var(--muted); background: linear-gradient(180deg, #121E31, #08111E); box-shadow: 0 12px 30px rgba(0,0,0,.16); }
 .manifesto i { background: var(--gold-accent); }
