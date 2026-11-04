@@ -14,6 +14,7 @@ test('hero photo is a bright static layer separate from the animated WebGL scene
   assert.match(css, /\.scene-poster \{[^}]*position: absolute;[^}]*z-index: 2;[^}]*filter: brightness\(1\.1\)/);
   assert.doesNotMatch(css.match(/\.scene-poster \{[^}]*\}/)?.[0] || '', /animation:|transition:/);
   assert.doesNotMatch(hero, /new THREE\.TextureLoader\(\)\.load\(HERO_PHOTO/);
+  assert.match(css, /\.scene-hotspots \.hotspot-copy \{ display: none; \}/);
 });
 
 test('WebGL scroll motion and interactive hotspot projection remain enabled', () => {

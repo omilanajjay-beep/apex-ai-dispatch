@@ -391,6 +391,7 @@ input[type='range']::-moz-range-thumb { width: 11px; height: 11px; border: 2px s
 .hotspot-marker { border-color: #F0DEA8; background: rgba(8,17,30,.76); box-shadow: 0 0 0 5px rgba(214,184,121,.12); }
 .hotspot.active .hotspot-marker { background: #D6B879; box-shadow: 0 0 0 5px rgba(214,184,121,.2), 0 0 16px rgba(214,184,121,.4); }
 .hotspot-copy { opacity: 1; }
+.scene-hotspots .hotspot-copy { display: none; }
 .hotspot-copy b { color: #F6F1E7; text-shadow: 0 1px 5px #08111E, 0 0 10px #08111E; }
 .hotspot-copy small { color: #F0DEA8; text-shadow: 0 1px 5px #08111E, 0 0 10px #08111E; }
 .scene-scale, .visual-label { color: #E0D4B8; text-shadow: 0 1px 6px #08111E; }
