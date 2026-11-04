@@ -18,6 +18,7 @@ test('hero photo is a bright static layer separate from the animated WebGL scene
 });
 
 test('WebGL scroll motion and interactive hotspot projection remain enabled', () => {
+  assert.match(hero, /let disposed = false;/);
   assert.match(hero, /scrollTimeline\.to\(scrollProgressRef\.current, \{ value: 1, ease: 'none' \}\)/);
   assert.match(hero, /setScrollPose\(scrollProgressRef\.current\.value/);
   assert.match(hero, /HOTSPOTS\.forEach\(\(hotspot\) =>/);

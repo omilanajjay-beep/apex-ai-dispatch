@@ -165,6 +165,7 @@ export default function Hero3D() {
   useEffect(() => {
     if (!mountRef.current) return undefined;
     const mount = mountRef.current;
+    let disposed = false;
     const mobile = window.matchMedia('(max-width: 680px), (pointer: coarse)').matches;
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     let reducedMotion = reducedMotionQuery.matches;
