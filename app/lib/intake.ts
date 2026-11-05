@@ -14,6 +14,10 @@ const SELF_INTRO = /^(?:hi|hello|hey)[,\s]+(?:i(?:'m| am)|my\s+name\s+is)\s+(.+?
 const MY_NAME = /^(?:my\s+name\s+is|i(?:'m| am))\s+(.+?)[!\.\s]*$/i;
 const NAME_CORRECTION_START = /^(?:my\s+name\s+is\s+not\b|that(?:['’]s|\s+is)\s+not\s+my\s+name\b|not\s+my\s+name\b)[\s,:;—-]*/i;
 const NAME_CORRECTION_INTRO = /\b(?:my\s+name\s+is|i(?:'m| am)|it(?:'s| is)|is)\s+/gi;
+// Do not treat a polite “sorry” preface as a correction; these markers indicate an explicit retry.
+const RETRY_OR_CORRECTION = /\b(?:typo|made\s+(?:a\s+)?mistake|explicit\s+correction|correct(?:ion)?|misheard|misunderstood)\b/i;
+const HVAC_PROBLEM_CONTEXT = /\b(?:heat(?:ing)?|cool(?:ing)?|hvac|furnace|boiler|air\s*condition(?:er|ing)?|a\/c|thermostat|ducts?|vents?|airflow|filter|compressor|heat\s*pump|radiator|system|temperature|room|house|home)\b|\b(?:no\s+heat|not\s+cool(?:ing)?|not\s+heating|too\s+(?:hot|cold)|won['’]?t\s+(?:heat|cool)|leak(?:ing)?|drip(?:ping)?|water|unusual\s+(?:noise|sound|smell|odou?r)|(?:noise|sound|smell|odou?r)|poor\s+airflow|little\s+air|weak\s+air|broken|not\s+working|stopped)\b/i;
+const ADDRESS_MARKER = /\b(?:street|st\.?|road|rd\.?|avenue|ave\.?|lane|ln\.?|drive|dr\.?|court|ct\.?|close|way|place|pl\.?|boulevard|blvd\.?|highway|hwy\.?|terrace|crescent|square|postcode|zip)\b/i;
 
 function clean(value: unknown): string {
   return typeof value === 'string' ? value.normalize('NFC').trim().replace(/\s+/g, ' ') : '';
@@ -75,10 +79,12 @@ export function isQuestionOrSideRequest(value: unknown): boolean {
 export function validateIntakeAnswer(step: IntakeStep, answer: string): string {
   if (answer.length > (step === 'problem' ? 800 : 240)) return 'That reply is too long. Please shorten it and try again.';
   if (step === 'name' && !normalizeName(answer)) return 'Please share the name you’d like me to use.';
-  if (step === 'phone' && answer.replace(/\D/g, '').length < 7) return 'That number looks a little short. Could you include at least seven digits?';
+  if (step !== 'name' && RETRY_OR_CORRECTION.test(answer)) return `I’m sorry, I didn’t get the ${step === 'problem' ? 'system issue' : step === 'phone' ? 'phone number' : step === 'email' ? 'email address' : 'property address'}. Could you share it again?`;
+  if (step === 'phone' && !/^[+\d\s().-]+$/.test(answer)) return 'Please share a phone number using digits, with any spaces or punctuation.';
+  if (step === 'phone' && (answer.replace(/\D/g, '').length < 7 || answer.replace(/\D/g, '').length > 15)) return 'That number looks unusual. Could you check it and try again?';
   if (step === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answer)) return 'Please check the email address and try again.';
-  if (step === 'address' && answer.length < 5) return 'Could you include the street and area for the property?';
-  if (step === 'problem' && answer.length < 8) return 'Could you share a little more about what the heating or cooling system is doing?';
+  if (step === 'address' && (answer.length < 5 || (!/\d/.test(answer) && !ADDRESS_MARKER.test(answer)))) return 'Could you include the property number, street, or area for the visit?';
+  if (step === 'problem' && (answer.length < 8 || !HVAC_PROBLEM_CONTEXT.test(answer))) return 'Could you describe the heating or cooling issue—for example, no heat, poor airflow, a leak, an unusual noise or smell, or a thermostat, furnace, or AC problem?';
   return '';
 }
 

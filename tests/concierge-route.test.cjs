@@ -81,9 +81,35 @@ test('phone and email validation reject bad answers without advancing', async ()
   assert.equal((await POST(request('email', 'person-at-example'))).status, 422);
   const good = await POST(request('email', ' Person@Example.COM ')); assert.equal(good.status, 200); assert.equal(good.body.accepted, true); assert.equal(good.body.value, 'person@example.com');
 });
+test('address typo text is rejected and does not advance to the HVAC issue', async () => {
+  const result = await POST(request('address', 'Sorry I made a typo', { completedFields: ['name', 'phone', 'email'] }));
+  assert.equal(result.status, 422);
+  assert.match(result.body.error, /property address|share it again/i);
+});
+test('completed fields must be the exact preceding intake fields', async () => {
+  const result = await POST(request('problem', 'The furnace is not heating', { completedFields: ['name', 'phone'] }));
+  assert.equal(result.status, 409);
+  assert.match(result.body.error, /requested detail/i);
+});
 test('problem answer is accepted and gets a concise acknowledgement', async () => {
   const result = await POST(request('problem', 'The furnace is making a loud rattling noise'));
   assert.equal(result.body.accepted, true); assert.equal(result.body.complete, true); assert.equal(result.body.nextQuestion, ''); assert.match(result.body.reply, /noise|pass|team/i);
+});
+test('unrelated long text is rejected with a problem clarification and stays on problem', async () => {
+  const result = await POST(request('problem', 'I like watching football and spending time with my friends on weekends'));
+  assert.equal(result.status, 422);
+  assert.match(result.body.error, /heating|cooling|no heat|airflow|thermostat/i);
+});
+test('natural-language HVAC complaint is accepted even with a benign sorry preface', async () => {
+  const result = await POST(request('problem', 'Sorry, the house is freezing and the furnace will not heat it'));
+  assert.equal(result.status, 200);
+  assert.equal(result.body.accepted, true);
+  assert.equal(result.body.complete, true);
+});
+test('explicit typo correction remains a retry', async () => {
+  const result = await POST(request('problem', 'Sorry, I made a typo'));
+  assert.equal(result.status, 422);
+  assert.match(result.body.error, /system issue|share it again/i);
 });
 test('missing, failing, empty, and PII-containing model output safely fall back', async (t) => {
   for (const mode of ['missing', 'failure', 'empty', 'pii']) await t.test(mode, async () => {

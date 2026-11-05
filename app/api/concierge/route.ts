@@ -71,6 +71,8 @@ export async function POST(request: Request) {
   if (body.completedFields !== undefined && (!Array.isArray(body.completedFields) || body.completedFields.length > 20 || body.completedFields.some((f) => typeof f !== 'string' || f.length > 40))) return json({ error: 'Invalid completed fields.' }, 422);
   if (body.issueCategory !== undefined && (typeof body.issueCategory !== 'string' || body.issueCategory.length > 80)) return json({ error: 'Invalid issue category.' }, 422);
   const step = body.step as IntakeStep;
+  const stepIndex = steps.indexOf(step);
+  if (Array.isArray(body.completedFields) && (body.completedFields.length !== stepIndex || body.completedFields.some((field, index) => field !== steps[index]))) return json({ error: 'Please continue with the requested detail before moving on.' }, 409);
   const knownName = step === 'name' ? '' : normalizeName(body.knownName);
   const rawAnswer = clean(body.answer);
   if (rawAnswer.length > (step === 'problem' ? 800 : 240)) return json({ error: 'That reply is too long. Please shorten it and try again.' }, 422);

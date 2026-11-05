@@ -88,7 +88,7 @@ test('greeting does not advance, and canonical name reaches booking rather than 
       return reply({ accepted: true, value: payload.step === 'name' ? 'Jay Omilana' : payload.answer, reply: 'Got it. Let’s carry on.', complete: payload.step === 'problem' });
     }
     if (String(url).startsWith('/api/slots?')) return reply({ slots: [{ start, date: start.slice(0, 10) }] });
-    if (url === '/api/book') return reply({ ok: true, emailWarning: false }, 201);
+    if (url === '/api/book') return reply({ ok: true, bookingId: 'booking-123' }, 201);
     throw new Error(`Unexpected request: ${url}`);
   };
   await submit(render, 'Hi');
@@ -156,4 +156,22 @@ test('a name correction during phone intake keeps the phone question active and 
   const chatCalls = calls.filter((call) => call.url === '/api/concierge');
   assert.deepEqual(chatCalls.map((call) => call.payload.step), ['name', 'phone', 'phone']);
   assert.equal(chatCalls[2].payload.knownName, 'Jummy');
+});
+test('a typo apology while address is expected stays on address and never submits the HVAC issue', async () => {
+  const render = createClient();
+  const calls = [];
+  global.fetch = async (url, options = {}) => {
+    const payload = options.body ? JSON.parse(options.body) : null;
+    calls.push({ url: String(url), payload });
+    if (url !== '/api/concierge') throw new Error(`Unexpected request: ${url}`);
+    if (payload.step === 'address' && payload.answer === 'Sorry I made a typo') return reply({ error: 'Could you include the property number, street, or area for the visit?' }, 422);
+    return reply({ accepted: true, value: payload.answer, reply: 'Thanks — next detail.', complete: false });
+  };
+  await submit(render, 'Jay');
+  await submit(render, '5551234567');
+  await submit(render, 'jay@example.com');
+  await submit(render, 'Sorry I made a typo');
+  assert.equal(calls.at(-1).payload.step, 'address');
+  assert.equal(calls.some((call) => call.payload?.step === 'problem'), false);
+  assert.ok(byLabel(render(), 'Your reply'));
 });
