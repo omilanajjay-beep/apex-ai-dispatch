@@ -7,9 +7,9 @@ import * as THREE from 'three';
 
 const HERO_PHOTO = { src: '/apex-ai-technicians.jpg', width: 6.0, aspect: 1280 / 698, center: [0, 0.63, 1.05] };
 const HOTSPOTS = [
-  { id: 'fan', label: 'AeroBlade fan', note: 'Outdoor unit in the field', left: '18%', top: '60%', anchor: [-2.16, 0.39, HERO_PHOTO.center[2]], target: [-2.16, 0.39, HERO_PHOTO.center[2]], cameraOffset: [0.22, 0.06], zoom: 0.76 },
-  { id: 'compressor', label: 'Technician service', note: 'On-site assessment', left: '63%', top: '44%', anchor: [0.78, 0.75, HERO_PHOTO.center[2]], target: [0.78, 0.75, HERO_PHOTO.center[2]], cameraOffset: [-0.14, 0.08], zoom: 0.78 },
-  { id: 'exchanger', label: 'Service-ready van', note: 'Tools for the visit', left: '48%', top: '28%', anchor: [-0.18, 1.30, HERO_PHOTO.center[2]], target: [-0.18, 1.30, HERO_PHOTO.center[2]], cameraOffset: [0.10, 0.08], zoom: 0.78 },
+  { id: 'fan', label: 'Outdoor unit', note: 'HVAC equipment at home', left: '18%', top: '60%', anchor: [-2.16, 0.39, HERO_PHOTO.center[2]], target: [-2.16, 0.39, HERO_PHOTO.center[2]], cameraOffset: [0.22, 0.06], zoom: 0.76 },
+  { id: 'compressor', label: 'Technician at home', note: 'On-site service visit', left: '63%', top: '44%', anchor: [0.78, 0.75, HERO_PHOTO.center[2]], target: [0.78, 0.75, HERO_PHOTO.center[2]], cameraOffset: [-0.14, 0.08], zoom: 0.78 },
+  { id: 'exchanger', label: 'Service van', note: 'Equipment for the visit', left: '48%', top: '28%', anchor: [-0.18, 1.30, HERO_PHOTO.center[2]], target: [-0.18, 1.30, HERO_PHOTO.center[2]], cameraOffset: [0.10, 0.08], zoom: 0.78 },
 ];
 
 gsap.registerPlugin(ScrollTrigger);
@@ -565,7 +565,7 @@ export default function Hero3D() {
     <div className="scene-canvas" ref={mountRef} />
     <div className="scene-vignette" aria-hidden="true" />
     <img className="scene-poster" src={HERO_PHOTO.src} alt="Technicians servicing an outdoor HVAC unit beside a service van" />
-    <div className="scene-hotspots" aria-label="Explore Apex AI field service">
+    <div className="scene-hotspots" aria-label="Explore Apex AI home HVAC service">
       {HOTSPOTS.map((hotspot) => <button
         key={hotspot.id}
         className={`hotspot ${active === hotspot.id ? 'active' : ''}`}
@@ -576,6 +576,6 @@ export default function Hero3D() {
         aria-label={`Focus on ${hotspot.label}`}
       />)}
     </div>
-    <div className="scene-scale" aria-hidden="true"><span>APEX AI / FIELD SERVICE</span><span>SCROLL TO EXPLORE / SELECT A MOMENT</span></div>
+    <div className="scene-scale" aria-hidden="true"><span>APEX AI / HOME HVAC SERVICE</span><span>FOLLOW THE VISIT / CHOOSE A DETAIL</span></div>
   </div>;
 }
