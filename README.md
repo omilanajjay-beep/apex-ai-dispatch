@@ -1,6 +1,6 @@
 # Apex AI
 
-A responsive architectural climate-systems site with a procedural Three.js product study, GSAP camera hotspots, contractor revenue calculator, truthful service/review states, and server-side concierge, Cal.com, and Pipedream notification routes.
+A responsive architectural climate-systems site with a procedural Three.js product study, GSAP camera hotspots, contractor revenue calculator, truthful service/review states, and server-side concierge, Cal.com routes.
 
 ## Local development
 
@@ -25,9 +25,6 @@ Set values in the hosting provider's encrypted environment-variable settings. Do
 | `CAL_USERNAME` | Conditional | Required with `CAL_EVENT_TYPE_SLUG` when using a personal event. |
 | `CAL_TEAM_SLUG` | Conditional | Use with `CAL_EVENT_TYPE_SLUG` when using a team event. |
 | `CAL_ORGANIZATION_SLUG` | Optional | Organization identifier for a Cal.com organization event. |
-| `PIPEDREAM_WEBHOOK_URL` | Yes for booking notifications | HTTPS Pipedream endpoint that receives one booking payload and sends both customer confirmation and internal contractor lead alert. |
-| `CONTRACTOR_EMAIL` | Yes for booking notifications | HVAC contractor/dispatch recipient included in the webhook payload. |
-| `CLIENT_NAME` | Optional | Client/business name included in the webhook payload; defaults to `Apex AI`. |
 | `NEXT_PUBLIC_SITE_URL` | Optional | Canonical public site origin for metadata, e.g. `https://apex-ai-dispatch.onrender.com`. |
 
 The live booking route verifies Cal.com availability immediately before creating a booking and requires configured Cal.com and Pipedream values before it can create a booking. Until configured, availability and booking routes fail closed; the front-end site remains usable.
@@ -36,11 +33,11 @@ The live booking route verifies Cal.com availability immediately before creating
 
 - `POST /api/concierge` — handles greetings and service questions without advancing intake, validates submitted details, and returns `accepted` plus a normalized `value` only for accepted answers. Natural replies include the next question in one message. Optional Groq acknowledgements receive sanitized labels/categories, not raw visitor messages.
 - `GET /api/slots?start=YYYY-MM-DD&end=YYYY-MM-DD&timeZone=...` — returns live availability from Cal.com.
-- `POST /api/book` — re-checks the selected slot, creates the Cal.com booking, then sends one structured webhook payload to Pipedream for dual customer and contractor email notifications.
+- `POST /api/book` — re-checks the selected slot, creates the Cal.com booking,.
 
 Each intake answer is sent to the app server for validation. The browser stores only accepted, normalized answers, and the visitor can check or edit their guest name before confirming. Both chat and booking routes reject greeting-only names such as “Hi”; conversational introductions such as “Hi, I’m Jay Omilana” become “Jay Omilana.” The booking route sends that validated name as Cal.com's `attendee.name`, while retaining the `service-address` and `hvac-issue` custom fields. Booking data is sent to Cal.com only when the visitor confirms; after Cal.com accepts the booking, the server posts `client_name`, `client_email`, `client_phone`, `contractor_email`, `service_type`, `booking_time`, and `notes` to Pipedream.
 
-Run `npm test` and `npm run typecheck` for local regression checks. Tests mock all booking, webhook, availability, and model requests; they do not create real appointments or send emails.
+Run `npm test` and `npm run typecheck` for local regression checks. Tests mock booking, availability, and model requests; they do not create real appointments or send emails.
 
 ## Render preview deployment
 

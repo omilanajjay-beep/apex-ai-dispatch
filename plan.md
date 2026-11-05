@@ -13,4 +13,4 @@ Apex AI is positioned as a quiet-luxury climate systems brand for design-conscio
 
 ## Service boundary
 
-Secrets are environment-only. The API route degrades gracefully to offline copy when Groq is unavailable. Cal.com and Pipedream are reserved for server-side booking and notification wiring after production account configuration; no client secret is exposed.
+Secrets are environment-only. The API route degrades gracefully to offline copy when Groq is unavailable. Cal.com is reserved for server-side booking after production account configuration; no client secret is exposed.

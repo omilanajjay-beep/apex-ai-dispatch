@@ -48,20 +48,6 @@ function loadRoute() {
     if (request === 'next/server') return { NextResponse: NextResponseMock };
     if (request === '../../lib/cal' && parent && parent.filename === routePath) return calMock;
     if (request === '../../lib/intake' && parent && parent.filename === routePath) return loadIntake();
-    if (request === '../../lib/notifications' && parent && parent.filename === routePath) {
-      return {
-        sendBookingNotification: async (payload) => {
-          const webhookUrl = process.env.PIPEDREAM_WEBHOOK_URL;
-          if (!webhookUrl) return false;
-          const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          return response.ok;
-        },
-      };
-    }
     return originalLoad.call(this, request, parent, isMain);
   };
   try {
@@ -79,7 +65,6 @@ const { POST } = loadRoute();
 
 let fetchCalls;
 let bookingResponse;
-let webhookResponse;
 
 function requestFor(start, attendee = validAttendee()) {
   return new Request('https://apex.test/api/book', {
@@ -104,22 +89,17 @@ function response(ok, status, body = {}) {
   return { ok, status, async json() { return body; } };
 }
 
-function installFetchMock({ booking = response(true, 201, { data: { uid: 'booking-123' } }), webhook = response(true, 202) } = {}) {
+function installFetchMock({ booking = response(true, 201, { data: { uid: 'booking-123' } }) } = {}) {
   fetchCalls = [];
   bookingResponse = booking;
-  webhookResponse = webhook;
   global.fetch = async (url, options = {}) => {
     fetchCalls.push({ url: String(url), options });
     if (String(url).includes('/bookings')) return bookingResponse;
-    if (String(url).includes('pipedream.net')) return webhookResponse;
     throw new Error(`Unexpected outgoing request: ${url}`);
   };
 }
 
 function setup(start = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()) {
-  process.env.PIPEDREAM_WEBHOOK_URL = 'https://dispatch.m.pipedream.net';
-  process.env.CONTRACTOR_EMAIL = 'dispatch@example.com';
-  process.env.CLIENT_NAME = 'Apex AI';
   liveSlots = [{ start }];
   installFetchMock();
   return start;
@@ -127,10 +107,9 @@ function setup(start = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()) 
 
 test.afterEach(() => {
   delete global.fetch;
-  for (const key of ['PIPEDREAM_WEBHOOK_URL', 'CONTRACTOR_EMAIL', 'CLIENT_NAME']) delete process.env[key];
 });
 
-test('successful booking sends exact Cal field answers and one dual-notification webhook', async () => {
+test('successful booking sends exact Cal field answers without notifications', async () => {
   const start = setup();
   const result = await POST(requestFor(start));
   assert.equal(result.status, 201);
@@ -152,16 +131,7 @@ test('successful booking sends exact Cal field answers and one dual-notification
     language: 'en',
   });
 
-  const webhookCalls = fetchCalls.filter((call) => call.url.includes('pipedream.net'));
-  assert.equal(webhookCalls.length, 1, 'one dual-notification webhook should be sent');
-  const notification = JSON.parse(webhookCalls[0].options.body);
-  assert.equal(notification.client_name, 'Apex AI');
-  assert.equal(notification.client_email, 'alex@example.com');
-  assert.equal(notification.client_phone, '(555) 123-4567');
-  assert.equal(notification.contractor_email, 'dispatch@example.com');
-  assert.equal(notification.service_type, 'Furnace is making a loud rattling noise');
-  assert.match(notification.booking_time, /America\/Los_Angeles/);
-  assert.equal(notification.notes, 'Customer: Alex Homeowner\nAddress: 123 Main Street, Portland');
+  assert.equal(fetchCalls.filter((call) => call.url.includes('pipedream.net')).length, 0);
 });
 
 test('missing address or HVAC issue stops before any outgoing call', async (t) => {
@@ -175,7 +145,7 @@ test('missing address or HVAC issue stops before any outgoing call', async (t) =
   }
 });
 
-test('slot unavailable does not attempt booking or webhook', async () => {
+test('slot unavailable does not attempt booking', async () => {
   const start = setup();
   liveSlots = [];
   const result = await POST(requestFor(start));
@@ -183,7 +153,7 @@ test('slot unavailable does not attempt booking or webhook', async () => {
   assert.equal(fetchCalls.length, 0);
 });
 
-test('Cal booking failure does not send webhook', async () => {
+test('Cal booking failure does not send notifications', async () => {
   const start = setup();
   installFetchMock({ booking: response(false, 500) });
   const result = await POST(requestFor(start));
@@ -192,7 +162,7 @@ test('Cal booking failure does not send webhook', async () => {
   assert.equal(fetchCalls.filter((call) => call.url.includes('pipedream.net')).length, 0);
 });
 
-test('greetings and non-names cannot create a booking or send webhook', async (t) => {
+test('greetings and non-names cannot create a booking or send notifications', async (t) => {
   for (const name of ['Hi', 'hello!', 'Hey there', 'Good morning', 'How are you?', 'I need a booking', '', 'A'.repeat(81)]) {
     await t.test(name || 'empty name', async () => {
       const start = setup();
@@ -203,7 +173,7 @@ test('greetings and non-names cannot create a booking or send webhook', async (t
   }
 });
 
-test('a conversational introduction sends the actual name to Cal and the webhook', async () => {
+test('a conversational introduction sends the actual name to Cal', async () => {
   const start = setup();
   const result = await POST(requestFor(start, validAttendee({ name: "Hi, I'm Jay Omilana" })));
   assert.equal(result.status, 201);
@@ -211,7 +181,5 @@ test('a conversational introduction sends the actual name to Cal and the webhook
   assert.equal(booking.attendee.name, 'Jay Omilana');
   assert.ok(booking.bookingFieldsResponses['service-address']);
   assert.ok(booking.bookingFieldsResponses['hvac-issue']);
-  const notification = JSON.parse(fetchCalls.find((entry) => entry.url.includes('pipedream.net')).options.body);
-  assert.equal(notification.notes, 'Customer: Jay Omilana\nAddress: 123 Main Street, Portland');
-  assert.doesNotMatch(notification.notes, /Hi, I'm/);
+  assert.equal(fetchCalls.filter((call) => call.url.includes('pipedream.net')).length, 0);
 });

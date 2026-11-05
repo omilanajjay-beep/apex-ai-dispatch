@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { bookingEventIdentity, fetchCalSlots, getCalConfig, validTimeZone } from '../../lib/cal';
 import { normalizeName } from '../../lib/intake';
-import { sendBookingNotification } from '../../lib/notifications';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -53,9 +52,7 @@ export async function POST(request: Request) {
   }
 
   const config = getCalConfig();
-  const webhookUrl = process.env.PIPEDREAM_WEBHOOK_URL?.trim() || '';
-  const contractorEmail = process.env.CONTRACTOR_EMAIL?.trim() || '';
-  if (!config || !webhookUrl || !emailPattern.test(contractorEmail)) {
+  if (!config) {
     return NextResponse.json({ error: 'Online scheduling is not available right now. Please try again later.' }, { status: 503 });
   }
 
@@ -93,16 +90,6 @@ export async function POST(request: Request) {
   }
 
   const bookingPayload = await bookingResponse.json().catch(() => ({}));
-  const dateLabel = new Intl.DateTimeFormat('en', { dateStyle: 'full', timeStyle: 'short', timeZone }).format(new Date(startTime));
-  const notificationSent = await sendBookingNotification({
-    client_name: process.env.CLIENT_NAME?.trim() || 'Apex AI',
-    client_email: email,
-    client_phone: phone,
-    contractor_email: contractorEmail,
-    service_type: problem,
-    booking_time: `${dateLabel} (${timeZone})`,
-    notes: `Customer: ${name}\nAddress: ${address}`,
-  });
   const bookingId = bookingPayload?.data?.uid || bookingPayload?.data?.id || null;
-  return NextResponse.json({ ok: true, emailWarning: !notificationSent, bookingId }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json({ ok: true, bookingId }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
 }
