@@ -48,6 +48,20 @@ function loadRoute() {
     if (request === 'next/server') return { NextResponse: NextResponseMock };
     if (request === '../../lib/cal' && parent && parent.filename === routePath) return calMock;
     if (request === '../../lib/intake' && parent && parent.filename === routePath) return loadIntake();
+    if (request === '../../lib/notifications' && parent && parent.filename === routePath) {
+      return {
+        sendBookingNotification: async (payload) => {
+          const webhookUrl = process.env.PIPEDREAM_WEBHOOK_URL;
+          if (!webhookUrl) return false;
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          return response.ok;
+        },
+      };
+    }
     return originalLoad.call(this, request, parent, isMain);
   };
   try {
@@ -65,7 +79,7 @@ const { POST } = loadRoute();
 
 let fetchCalls;
 let bookingResponse;
-let sendgridResponse;
+let webhookResponse;
 
 function requestFor(start, attendee = validAttendee()) {
   return new Request('https://apex.test/api/book', {
@@ -90,22 +104,22 @@ function response(ok, status, body = {}) {
   return { ok, status, async json() { return body; } };
 }
 
-function installFetchMock({ booking = response(true, 201, { data: { uid: 'booking-123' } }), sendgrid = response(true, 202) } = {}) {
+function installFetchMock({ booking = response(true, 201, { data: { uid: 'booking-123' } }), webhook = response(true, 202) } = {}) {
   fetchCalls = [];
   bookingResponse = booking;
-  sendgridResponse = sendgrid;
+  webhookResponse = webhook;
   global.fetch = async (url, options = {}) => {
     fetchCalls.push({ url: String(url), options });
     if (String(url).includes('/bookings')) return bookingResponse;
-    if (String(url).includes('sendgrid.com')) return sendgridResponse;
+    if (String(url).includes('pipedream.net')) return webhookResponse;
     throw new Error(`Unexpected outgoing request: ${url}`);
   };
 }
 
 function setup(start = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()) {
-  process.env.SENDGRID_API_KEY = 'sendgrid-test-key';
-  process.env.SENDGRID_FROM_EMAIL = 'verified-sender@example.com';
-  process.env.SENDGRID_TECH_EMAIL = 'dispatch@example.com';
+  process.env.PIPEDREAM_WEBHOOK_URL = 'https://dispatch.m.pipedream.net';
+  process.env.CONTRACTOR_EMAIL = 'dispatch@example.com';
+  process.env.CLIENT_NAME = 'Apex AI';
   liveSlots = [{ start }];
   installFetchMock();
   return start;
@@ -113,10 +127,10 @@ function setup(start = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()) 
 
 test.afterEach(() => {
   delete global.fetch;
-  for (const key of ['SENDGRID_API_KEY', 'SENDGRID_FROM_EMAIL', 'SENDGRID_TECH_EMAIL']) delete process.env[key];
+  for (const key of ['PIPEDREAM_WEBHOOK_URL', 'CONTRACTOR_EMAIL', 'CLIENT_NAME']) delete process.env[key];
 });
 
-test('successful booking sends exact Cal field answers and two semantically complete emails', async () => {
+test('successful booking sends exact Cal field answers and one dual-notification webhook', async () => {
   const start = setup();
   const result = await POST(requestFor(start));
   assert.equal(result.status, 201);
@@ -138,17 +152,16 @@ test('successful booking sends exact Cal field answers and two semantically comp
     language: 'en',
   });
 
-  const emailCalls = fetchCalls.filter((call) => call.url.includes('sendgrid.com'));
-  assert.equal(emailCalls.length, 2, 'one email should go to the homeowner and one to dispatch');
-  const emails = emailCalls.map((call) => JSON.parse(call.options.body));
-  const recipients = emails.map((email) => email.personalizations?.[0]?.to?.[0]?.email).sort();
-  assert.deepEqual(recipients, ['alex@example.com', 'dispatch@example.com']);
-  for (const email of emails) {
-    const message = email.content?.[0]?.value || '';
-    for (const value of ['Alex Homeowner', '(555) 123-4567', 'alex@example.com', '123 Main Street, Portland', 'Furnace is making a loud rattling noise']) {
-      assert.match(message, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-    }
-  }
+  const webhookCalls = fetchCalls.filter((call) => call.url.includes('pipedream.net'));
+  assert.equal(webhookCalls.length, 1, 'one dual-notification webhook should be sent');
+  const notification = JSON.parse(webhookCalls[0].options.body);
+  assert.equal(notification.client_name, 'Apex AI');
+  assert.equal(notification.client_email, 'alex@example.com');
+  assert.equal(notification.client_phone, '(555) 123-4567');
+  assert.equal(notification.contractor_email, 'dispatch@example.com');
+  assert.equal(notification.service_type, 'Furnace is making a loud rattling noise');
+  assert.match(notification.booking_time, /America\/Los_Angeles/);
+  assert.equal(notification.notes, 'Customer: Alex Homeowner\nAddress: 123 Main Street, Portland');
 });
 
 test('missing address or HVAC issue stops before any outgoing call', async (t) => {
@@ -162,7 +175,7 @@ test('missing address or HVAC issue stops before any outgoing call', async (t) =
   }
 });
 
-test('slot unavailable does not attempt booking or email', async () => {
+test('slot unavailable does not attempt booking or webhook', async () => {
   const start = setup();
   liveSlots = [];
   const result = await POST(requestFor(start));
@@ -170,16 +183,16 @@ test('slot unavailable does not attempt booking or email', async () => {
   assert.equal(fetchCalls.length, 0);
 });
 
-test('Cal booking failure does not send email', async () => {
+test('Cal booking failure does not send webhook', async () => {
   const start = setup();
   installFetchMock({ booking: response(false, 500) });
   const result = await POST(requestFor(start));
   assert.equal(result.status, 502);
   assert.equal(fetchCalls.filter((call) => call.url.includes('/bookings')).length, 1);
-  assert.equal(fetchCalls.filter((call) => call.url.includes('sendgrid.com')).length, 0);
+  assert.equal(fetchCalls.filter((call) => call.url.includes('pipedream.net')).length, 0);
 });
 
-test('greetings and non-names cannot create a booking or send email', async (t) => {
+test('greetings and non-names cannot create a booking or send webhook', async (t) => {
   for (const name of ['Hi', 'hello!', 'Hey there', 'Good morning', 'How are you?', 'I need a booking', '', 'A'.repeat(81)]) {
     await t.test(name || 'empty name', async () => {
       const start = setup();
@@ -190,7 +203,7 @@ test('greetings and non-names cannot create a booking or send email', async (t) 
   }
 });
 
-test('a conversational introduction sends the actual name to Cal and both emails', async () => {
+test('a conversational introduction sends the actual name to Cal and the webhook', async () => {
   const start = setup();
   const result = await POST(requestFor(start, validAttendee({ name: "Hi, I'm Jay Omilana" })));
   assert.equal(result.status, 201);
@@ -198,9 +211,7 @@ test('a conversational introduction sends the actual name to Cal and both emails
   assert.equal(booking.attendee.name, 'Jay Omilana');
   assert.ok(booking.bookingFieldsResponses['service-address']);
   assert.ok(booking.bookingFieldsResponses['hvac-issue']);
-  for (const call of fetchCalls.filter((entry) => entry.url.includes('sendgrid.com'))) {
-    const email = JSON.parse(call.options.body);
-    assert.match(email.content[0].value, /Name: Jay Omilana/);
-    assert.doesNotMatch(email.content[0].value, /Hi, I'm/);
-  }
+  const notification = JSON.parse(fetchCalls.find((entry) => entry.url.includes('pipedream.net')).options.body);
+  assert.equal(notification.notes, 'Customer: Jay Omilana\nAddress: 123 Main Street, Portland');
+  assert.doesNotMatch(notification.notes, /Hi, I'm/);
 });

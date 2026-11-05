@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { bookingEventIdentity, fetchCalSlots, getCalConfig, validTimeZone } from '../../lib/cal';
 import { normalizeName } from '../../lib/intake';
+import { sendBookingNotification } from '../../lib/notifications';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,22 +24,6 @@ function localDate(value: string, timeZone: string) {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(value));
   const read = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
   return `${read('year')}-${read('month')}-${read('day')}`;
-}
-
-async function sendEmail(to: string, subject: string, text: string) {
-  const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.SENDGRID_API_KEY}` },
-    body: JSON.stringify({
-      personalizations: [{ to: [{ email: to }] }],
-      from: { email: process.env.SENDGRID_FROM_EMAIL, name: 'Apex AI' },
-      subject,
-      content: [{ type: 'text/plain', value: text }],
-    }),
-    cache: 'no-store',
-    signal: AbortSignal.timeout(12000),
-  });
-  return response.status === 202;
 }
 
 export async function POST(request: Request) {
@@ -68,9 +53,9 @@ export async function POST(request: Request) {
   }
 
   const config = getCalConfig();
-  const sender = process.env.SENDGRID_FROM_EMAIL || '';
-  const technician = process.env.SENDGRID_TECH_EMAIL || '';
-  if (!config || !process.env.SENDGRID_API_KEY || !emailPattern.test(sender) || !emailPattern.test(technician)) {
+  const webhookUrl = process.env.PIPEDREAM_WEBHOOK_URL?.trim() || '';
+  const contractorEmail = process.env.CONTRACTOR_EMAIL?.trim() || '';
+  if (!config || !webhookUrl || !emailPattern.test(contractorEmail)) {
     return NextResponse.json({ error: 'Online scheduling is not available right now. Please try again later.' }, { status: 503 });
   }
 
@@ -109,14 +94,15 @@ export async function POST(request: Request) {
 
   const bookingPayload = await bookingResponse.json().catch(() => ({}));
   const dateLabel = new Intl.DateTimeFormat('en', { dateStyle: 'full', timeStyle: 'short', timeZone }).format(new Date(startTime));
-  const visitDetails = `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nAddress: ${address}\nVisit: ${dateLabel} (${timeZone})\nHVAC issue: ${problem}`;
-  const homeownerMessage = `Hello ${name},\n\nYour Apex AI visit is confirmed for ${dateLabel} (${timeZone}).\n\n${visitDetails}\n\nOur dispatch team will contact you if any details are needed.\n\nApex AI`;
-  const technicianMessage = `A new Apex AI appointment has been booked.\n\n${visitDetails}\n\nPlease follow up with the homeowner as needed.`;
-  const emailResults = await Promise.allSettled([
-    sendEmail(email, 'Your Apex AI visit is confirmed', homeownerMessage),
-    sendEmail(technician, 'New Apex AI appointment', technicianMessage),
-  ]);
-  const emailWarning = emailResults.some((result) => result.status === 'rejected' || !result.value);
+  const notificationSent = await sendBookingNotification({
+    client_name: process.env.CLIENT_NAME?.trim() || 'Apex AI',
+    client_email: email,
+    client_phone: phone,
+    contractor_email: contractorEmail,
+    service_type: problem,
+    booking_time: `${dateLabel} (${timeZone})`,
+    notes: `Customer: ${name}\nAddress: ${address}`,
+  });
   const bookingId = bookingPayload?.data?.uid || bookingPayload?.data?.id || null;
-  return NextResponse.json({ ok: true, emailWarning, bookingId }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json({ ok: true, emailWarning: !notificationSent, bookingId }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
 }

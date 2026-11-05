@@ -1,6 +1,6 @@
 # Apex AI
 
-A responsive architectural climate-systems site with a procedural Three.js product study, GSAP camera hotspots, contractor revenue calculator, truthful service/review states, and server-side concierge, Cal.com, and SendGrid routes.
+A responsive architectural climate-systems site with a procedural Three.js product study, GSAP camera hotspots, contractor revenue calculator, truthful service/review states, and server-side concierge, Cal.com, and Pipedream notification routes.
 
 ## Local development
 
@@ -25,23 +25,23 @@ Set values in the hosting provider's encrypted environment-variable settings. Do
 | `CAL_USERNAME` | Conditional | Required with `CAL_EVENT_TYPE_SLUG` when using a personal event. |
 | `CAL_TEAM_SLUG` | Conditional | Use with `CAL_EVENT_TYPE_SLUG` when using a team event. |
 | `CAL_ORGANIZATION_SLUG` | Optional | Organization identifier for a Cal.com organization event. |
-| `SENDGRID_API_KEY` | Yes for booking confirmation | Sends the homeowner and dispatch emails after a confirmed appointment. |
-| `SENDGRID_FROM_EMAIL` | Yes for booking email | Use an email address verified in SendGrid; the example file contains a clearly labeled placeholder. |
-| `SENDGRID_TECH_EMAIL` | Yes for booking email | On-call technician/dispatch recipient. |
+| `PIPEDREAM_WEBHOOK_URL` | Yes for booking notifications | HTTPS Pipedream endpoint that receives one booking payload and sends both customer confirmation and internal contractor lead alert. |
+| `CONTRACTOR_EMAIL` | Yes for booking notifications | HVAC contractor/dispatch recipient included in the webhook payload. |
+| `CLIENT_NAME` | Optional | Client/business name included in the webhook payload; defaults to `Apex AI`. |
 | `NEXT_PUBLIC_SITE_URL` | Optional | Canonical public site origin for metadata, e.g. `https://apex-ai-dispatch.onrender.com`. |
 
-The live booking route verifies Cal.com availability and requires configured Cal.com and SendGrid values before it can create a booking. Until configured, availability and booking routes fail closed; the front-end site remains usable.
+The live booking route verifies Cal.com availability immediately before creating a booking and requires configured Cal.com and Pipedream values before it can create a booking. Until configured, availability and booking routes fail closed; the front-end site remains usable.
 
 ## Backend routes
 
 - `POST /api/concierge` — handles greetings and service questions without advancing intake, validates submitted details, and returns `accepted` plus a normalized `value` only for accepted answers. Natural replies include the next question in one message. Optional Groq acknowledgements receive sanitized labels/categories, not raw visitor messages.
 - `GET /api/slots?start=YYYY-MM-DD&end=YYYY-MM-DD&timeZone=...` — returns live availability from Cal.com.
-- `POST /api/book` — re-checks the selected slot, creates the Cal.com booking, then sends distinct homeowner and technician confirmations through SendGrid.
+- `POST /api/book` — re-checks the selected slot, creates the Cal.com booking, then sends one structured webhook payload to Pipedream for dual customer and contractor email notifications.
 
-Each intake answer is sent to the app server for validation. The browser stores only accepted, normalized answers, and the visitor can check or edit their guest name before confirming. Both chat and booking routes reject greeting-only names such as “Hi”; conversational introductions such as “Hi, I’m Jay Omilana” become “Jay Omilana.” The booking route sends that validated name as Cal.com's `attendee.name`, while retaining the `service-address` and `hvac-issue` custom fields and both email templates. Booking data is sent to Cal.com only when the visitor confirms, and the two transactional emails are sent through SendGrid after booking succeeds.
+Each intake answer is sent to the app server for validation. The browser stores only accepted, normalized answers, and the visitor can check or edit their guest name before confirming. Both chat and booking routes reject greeting-only names such as “Hi”; conversational introductions such as “Hi, I’m Jay Omilana” become “Jay Omilana.” The booking route sends that validated name as Cal.com's `attendee.name`, while retaining the `service-address` and `hvac-issue` custom fields. Booking data is sent to Cal.com only when the visitor confirms; after Cal.com accepts the booking, the server posts `client_name`, `client_email`, `client_phone`, `contractor_email`, `service_type`, `booking_time`, and `notes` to Pipedream.
 
-Run `npm test` and `npm run typecheck` for local regression checks. Tests mock all booking, email, availability, and model requests; they do not create real appointments or send emails.
+Run `npm test` and `npm run typecheck` for local regression checks. Tests mock all booking, webhook, availability, and model requests; they do not create real appointments or send emails.
 
 ## Render preview deployment
 
-Deploy this Next.js application as a Render Web Service rather than a static site: the concierge, availability, and booking routes require a server runtime. Use Node.js 22, build command `npm ci && npm run build`, and start command `npm run start`. Set environment variables in Render's encrypted service settings; never commit `.env` or `.env.local`. Configure `NEXT_PUBLIC_SITE_URL` to the service's assigned HTTPS origin (the requested candidate is `https://apex-ai-dispatch.onrender.com`, subject to availability). The visitor chat has safe local fallback replies when `GROQ_API_KEY` is absent; live booking and email dispatch still require their separate Cal.com and SendGrid configuration.
+Deploy this Next.js application as a Render Web Service rather than a static site: the concierge, availability, and booking routes require a server runtime. Use Node.js 22, build command `npm ci && npm run build`, and start command `npm run start`. Set environment variables in Render's encrypted service settings; never commit `.env` or `.env.local`. Configure `NEXT_PUBLIC_SITE_URL` to the service's assigned HTTPS origin (the requested candidate is `https://apex-ai-dispatch.onrender.com`, subject to availability). The visitor chat has safe local fallback replies when `GROQ_API_KEY` is absent; live booking requires Cal.com plus `PIPEDREAM_WEBHOOK_URL` and `CONTRACTOR_EMAIL`.
