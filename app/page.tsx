@@ -234,7 +234,7 @@ export default function Home() {
     <section className="hero" id="top">
       <div className="hero-copy">
         <span className="eyebrow">HOME COMFORT / START WITH A CONVERSATION</span>
-        <h1>The right care<br /><i>starts at home.</i></h1>
+        <h1>Care,<br /><i>built on</i> listening.</h1>
         <p>Tell us what you’re noticing at home. A clear service request can help the HVAC professional understand your concern before the visit.</p>
         <div className="hero-actions"><button className="button button-primary" onClick={() => document.getElementById('system')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}>How a visit works <ArrowUpRight size={15} /></button><button className="quiet-link" onClick={requestSurvey}>Talk through your needs <ArrowRight size={15} /></button></div>
         <div className="hero-facts"><div><span>01</span><small>Your home<br />comes first</small></div><div><span>02</span><small>Questions<br />are welcome</small></div><div><span>03</span><small>Next steps<br />made clear</small></div></div>
@@ -285,7 +285,7 @@ export default function Home() {
       <div className="review-empty glass-panel" data-reveal data-depth><span className="review-seal"><ShieldCheck size={23} /></span><span className="eyebrow">REAL SERVICE, REAL VOICES</span><h3>Nothing made up.</h3><p>This space is for feedback from completed visits, shared with the homeowner’s permission. No rating or testimonial is published without that confirmation.</p><button onClick={requestSurvey}>Ask about a service visit <ArrowUpRight size={15} /></button></div>
     </section>
 
-    <section className="closing-band" data-reveal><div><span className="eyebrow">THE NEXT STEP STARTS AT HOME</span><h2>Tell us what<br /><i>comfort means to you.</i></h2></div><button className="button button-primary" onClick={requestSurvey}>Arrange a visit <ArrowUpRight size={15} /></button></section>
+    <section className="closing-band" data-reveal><div><span className="eyebrow">THE NEXT STEP STARTS AT HOME</span><h2>A clearer plan<br /><i>starts here.</i></h2></div><button className="button button-primary" onClick={requestSurvey}>Arrange a visit <ArrowUpRight size={15} /></button></section>
 
     <footer className="site-footer"><a className="brand" href="#top"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a><span className="footer-note">HOME HVAC / CARE, MADE CLEAR</span><button onClick={requestSurvey}>Start a conversation <ArrowUpRight size={14} /></button></footer>
 
