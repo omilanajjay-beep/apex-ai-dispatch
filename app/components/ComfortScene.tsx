@@ -109,6 +109,8 @@ export default function ComfortScene() {
         vec4 b = texture2D(uTextureB, vUv - drift * 0.7);
         vec4 color = mix(a, b, smoothstep(0.16, 0.9, uBlend));
         gl_FragColor = vec4(color.rgb, color.a * uOpacity);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
       }
     `;
 
@@ -218,18 +220,20 @@ export default function ComfortScene() {
         if (finale) {
           mesh.visible = true; mesh.position.lerp(fibonacciTargets[i].clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), t * .09), 0.055); mesh.scale.lerp(new THREE.Vector3(1.25, 1.25, 1), 0.055); material.uniforms.uOpacity.value = THREE.MathUtils.lerp(material.uniforms.uOpacity.value, 0.35, 0.06);
         } else if (serviceVisible && allTexturesReady) {
-          mesh.visible = true; mesh.position.lerp(grid, 0.16); mesh.scale.lerp(new THREE.Vector3(serviceScales[i].x, serviceScales[i].y, 1), 0.16); material.uniforms.uOpacity.value = THREE.MathUtils.lerp(material.uniforms.uOpacity.value, 0.88, 0.08);
+          // Keep category photos crisp in the DOM; WebGL remains decorative only.
+          mesh.visible = false; mesh.position.lerp(grid, 0.16); mesh.scale.lerp(new THREE.Vector3(serviceScales[i].x, serviceScales[i].y, 1), 0.16); material.uniforms.uOpacity.value = THREE.MathUtils.lerp(material.uniforms.uOpacity.value, 0.88, 0.08);
           const image = document.querySelectorAll<HTMLElement>('#services .service-image')[i];
           if (image && (image.getBoundingClientRect().bottom < 0 || image.getBoundingClientRect().top > window.innerHeight)) mesh.visible = false;
         } else if (!serviceVisible && !visitVisible) {
-          mesh.visible = true; mesh.position.lerp(ribbon, 0.075); mesh.scale.lerp(new THREE.Vector3(window.innerWidth < 720 ? 1.15 : 1.8, window.innerWidth < 720 ? .76 : 1.17, 1), 0.075); material.uniforms.uOpacity.value = THREE.MathUtils.lerp(material.uniforms.uOpacity.value, 0.72, 0.08);
+          // Leave the opening photograph unobstructed, then reveal a lighter ribbon on scroll.
+          mesh.visible = heroProgress > 0.12 && i % 3 === 0; mesh.position.lerp(ribbon, 0.075); mesh.scale.lerp(new THREE.Vector3(window.innerWidth < 720 ? 1.15 : 1.8, window.innerWidth < 720 ? .76 : 1.17, 1), 0.075); material.uniforms.uOpacity.value = THREE.MathUtils.lerp(material.uniforms.uOpacity.value, 0.94, 0.08);
         } else {
           mesh.visible = false;
         }
         const row = Math.floor(i / 3); const col = i % 3;
         const targetRot = finale ? new THREE.Euler(Math.sin(t * 0.2 + row) * 0.12, t * 0.08 + col * 0.15, Math.cos(t * 0.17 + i) * 0.1) : new THREE.Euler(intro > 0.25 ? Math.sin(t * 0.35 + row) * 0.025 : 0.12 * Math.sin(t + i), intro > 0.25 ? Math.cos(t * 0.31 + col) * 0.035 : 0.08 * Math.cos(t * 0.7 + i), intro < 0.25 ? Math.sin(i * 1.8) * 0.18 : 0);
         mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, targetRot.x, 0.06); mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, targetRot.y, 0.06); mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, targetRot.z, 0.06);
-        material.uniforms.uTime.value = t; material.uniforms.uBlend.value = (hoverIndex === i || eventHoverIndex === i) ? 1 : THREE.MathUtils.clamp(Math.abs(scrollVelocity) * 0.018, 0, 0.22); material.uniforms.uHover.value = THREE.MathUtils.lerp(material.uniforms.uHover.value, (hoverIndex === i || eventHoverIndex === i) ? 1 : 0, 0.12); material.uniforms.uDent.value.lerp(pointerWorld, 0.14);
+        material.uniforms.uTime.value = t; material.uniforms.uBlend.value = 0; material.uniforms.uHover.value = THREE.MathUtils.lerp(material.uniforms.uHover.value, (hoverIndex === i || eventHoverIndex === i) ? 1 : 0, 0.12); material.uniforms.uDent.value.lerp(pointerWorld, 0.14);
       }
       const firstViewport = THREE.MathUtils.clamp(window.scrollY / Math.max(1, window.innerHeight), 0, 1);
       mark.position.x = THREE.MathUtils.lerp(mark.position.x, THREE.MathUtils.lerp(3.3, -4.25, firstViewport), 0.08);
