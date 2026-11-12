@@ -15,12 +15,14 @@ import {
   MessageCircle,
   Send,
   ShieldCheck,
+  Sun,
+  Moon,
   Snowflake,
   Wrench,
   X,
 } from 'lucide-react';
-import SiteMotion from './components/SiteMotion';
-import Hero3D from './components/Hero3D';
+import ComfortScene from './components/ComfortScene';
+import ExperienceMotion from './components/ExperienceMotion';
 
 type Role = 'assistant' | 'user';
 type ChatMessage = { role: Role; text: string };
@@ -202,92 +204,61 @@ function Concierge({ open, setOpen }: { open: boolean; setOpen: (next: boolean) 
   </>;
 }
 
+const services = [
+  ['Cooling, restored.', 'Air conditioning repair', 'Uneven temperatures, warm air or an unfamiliar sound? Start with a clear diagnosis, not a guess.', '/hvac-service.webp'],
+  ['Warmth, without worry.', 'Heating & furnace care', 'Talk through cold rooms, heating interruptions and the next step toward a comfortable home.', '/hvac-detail.jpg'],
+  ['A smarter kind of comfort.', 'Heat pump systems', 'Explore heating and cooling in one system, with a plan suited to your home and climate.', '/hvac-heatpump.jpg'],
+  ['Small system. Big difference.', 'Ductless mini-splits', 'Discuss targeted comfort for a new room, a home office or a space your existing system misses.', '/hvac-detail.jpg'],
+  ['Keep the good air flowing.', 'Seasonal maintenance', 'Give your equipment attention before the weather changes. Ask about checks, cleaning and upkeep.', '/apex-ai-technicians.jpg'],
+  ['Fresh thinking, indoors.', 'Indoor air quality', 'Bring your questions about filtration, ventilation and the air moving through your home.', '/hvac-heatpump.jpg'],
+  ['Every room belongs.', 'Airflow & ductwork', 'Explore why one room feels different, and what an on-site airflow assessment can reveal.', '/hvac-service.webp'],
+  ['Comfort at your fingertips.', 'Thermostat & controls', 'Make sense of schedules, settings and controls so your system works around your day.', '/hvac-detail.jpg'],
+  ['A better next chapter.', 'System replacement', 'Compare options after an assessment of your existing equipment, space and comfort priorities.', '/hvac-heatpump.jpg'],
+  ['Find the reason first.', 'System diagnostics', 'Describe leaks, strange noises, cycling or reduced performance. Let the visit start with context.', '/apex-ai-technicians.jpg'],
+  ['Built around your home.', 'Installation planning', 'Discuss equipment placement, access, timing and the practical details before work begins.', '/hvac-service.webp'],
+  ['Ready for what’s next.', 'Year-round comfort', 'Make a practical plan for the seasons ahead, from everyday upkeep to future improvements.', '/hvac-heatpump.jpg'],
+];
+
 export default function Home() {
-  const [partnerCount, setPartnerCount] = useState(3);
   const [menuOpen, setMenuOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const setupTotal = partnerCount * 2500;
-  const monthlyTotal = partnerCount * 1000;
-  const firstYearTotal = setupTotal + monthlyTotal * 12;
+  const [light, setLight] = useState(false);
+  const [activeService, setActiveService] = useState<number | null>(null);
+  const requestSurvey = () => { setChatOpen(true); setMenuOpen(false); };
 
-  const requestSurvey = () => {
-    setChatOpen(true);
-    setMenuOpen(false);
-  };
-
-  return <main className="min-h-screen bg-ink text-paper">
-    <div className="status-bar"><span><i className="status-indicator" /> HOME HVAC / PEOPLE BEFORE EQUIPMENT</span><span className="status-right">COMFORT CARE, MADE CLEAR <ArrowUpRight size={12} /></span></div>
-    <nav className="site-nav" aria-label="Main navigation">
+  return <main className={`experience ${light ? 'theme-light' : ''}`} id="top">
+    <ComfortScene />
+    <nav className="experience-nav" aria-label="Main navigation">
       <a className="brand" href="#top" aria-label="Apex AI home"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a>
-      <div id="primary-links" className={`nav-links ${menuOpen ? 'open' : ''}`}>
-        <a onClick={() => setMenuOpen(false)} href="#system">Your comfort</a>
-        <a onClick={() => setMenuOpen(false)} href="#team">The people</a>
-        <a onClick={() => setMenuOpen(false)} href="#partners">For contractors</a>
-        <a onClick={() => setMenuOpen(false)} href="#reviews">Homeowner feedback</a>
+      <div id="primary-links" className={`experience-links ${menuOpen ? 'open' : ''}`}>
+        <a href="#services" onClick={() => setMenuOpen(false)}>Our expertise</a><a href="#approach" onClick={() => setMenuOpen(false)}>The Apex approach</a><a href="#finale" onClick={() => setMenuOpen(false)}>Let’s talk</a>
       </div>
-      <button className="nav-cta" onClick={requestSurvey}>Plan a visit <ArrowUpRight size={15} /></button>
-      <button className="menu-toggle" aria-expanded={menuOpen} aria-controls="primary-links" onClick={() => setMenuOpen((value) => !value)} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}>{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
+      <div className="nav-tools"><button className="theme-toggle" onClick={() => setLight(!light)} aria-label={light ? 'Switch to dark theme' : 'Switch to light theme'}>{light ? <Moon size={17} /> : <Sun size={17} />}</button><button className="visit-cta" onClick={requestSurvey}>Plan a visit <ArrowUpRight size={16} /></button><button className="menu-toggle" aria-expanded={menuOpen} aria-controls="primary-links" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}>{menuOpen ? <X size={21} /> : <Menu size={21} />}</button></div>
     </nav>
 
-    <section className="hero" id="top">
-      <div className="hero-copy">
-        <span className="eyebrow">HOME COMFORT / START WITH A CONVERSATION</span>
-        <h1>Care,<br /><i>built on</i> listening.</h1>
-        <p>Tell us what you’re noticing at home. A clear service request can help the HVAC professional understand your concern before the visit.</p>
-        <div className="hero-actions"><button className="button button-primary" onClick={() => document.getElementById('system')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}>How a visit works <ArrowUpRight size={15} /></button><button className="quiet-link" onClick={requestSurvey}>Talk through your needs <ArrowRight size={15} /></button></div>
-        <div className="hero-facts"><div><span>01</span><small>Your home<br />comes first</small></div><div><span>02</span><small>Questions<br />are welcome</small></div><div><span>03</span><small>Next steps<br />made clear</small></div></div>
-      </div>
-      <div className="hero-visual"><Hero3D /><div className="visual-label"><span>APEX AI / HOME HVAC CARE</span><span>A CLOSER LOOK AT THE VISIT</span></div></div>
-      <a className="scroll-cue" href="#system"><span>SEE HOW WE WORK</span><ArrowDownRight size={15} /></a>
+    <section className="comfort-hero" aria-labelledby="comfort-title">
+      <div className="hero-photograph"><img src="/hvac-heatpump.jpg" alt="Outdoor heat pump beside a bright modern home" fetchPriority="high" /><div className="photo-shade" /></div>
+      <div className="hero-topline"><span className="eyebrow">APEX AI / HEATING · COOLING · HOME COMFORT</span><span className="edition">A BREATH OF SOMETHING BETTER — 01</span></div>
+      <div className="comfort-heading"><h1 id="comfort-title"><span className="headline-first">Feel at home.</span><span className="headline-second"><i>In every season.</i></span></h1><div className="hero-bottom-copy"><p>Real homes. Real comfort.<br />Thoughtful HVAC care, from the first conversation to the next clear step.</p><button className="round-link" onClick={requestSurvey}><span>Find your comfort</span><span className="round-arrow"><ArrowUpRight size={23} /></span></button></div></div>
+      <div className="hero-bottomline"><a href="#services">SCROLL TO EXPLORE <ArrowDownRight size={15} /></a><span>HEATING / COOLING / EVERYTHING BETWEEN</span></div>
     </section>
 
-    <section className="manifesto" aria-label="Our approach"><span>LISTEN BEFORE RECOMMENDING</span><i /> <span>COMFORT IS PERSONAL</span><i /> <span>CLEAR SERVICE, STEP BY STEP</span></section>
+    <section className="comfort-intro" id="approach"><span className="eyebrow">01 / THE APEX APPROACH</span><div><h2>Your home has a rhythm.<br /><i>We help you find it.</i></h2><p>Not just equipment. The room that never cools down. The first cold morning. The air your family breathes. Tell us what you notice — we’ll help make the next step clear.</p></div><span className="intro-index">A / AI</span></section>
 
-    <section className="section system-section" id="system">
-      <div className="section-heading" data-reveal><span className="eyebrow">01 / YOUR COMFORT</span><h2>Start with your<br /><i>idea of comfort.</i></h2><p>Every home has its own rhythms. A useful conversation begins with what you notice, what you already have, and what you would like to feel different.</p></div>
-      <div className="feature-stack">
-        <article className="feature-row feature-row-photo" data-reveal><span className="feature-index">01</span><img className="feature-photo" src="/apex-ai-technicians.jpg" alt="HVAC technicians servicing an outdoor unit beside a service van" width={1280} height={698} loading="lazy" /><div><h3>Tell us what you notice</h3><p>Share the room, equipment or concern that brought you here. The first conversation starts with your experience.</p></div><ChevronRight size={17} className="feature-chevron" /></article>
-        <article className="feature-row" data-reveal><span className="feature-index">02</span><div className="feature-icon"><Snowflake size={19} /></div><div><h3>Talk through the options</h3><p>An on-site assessment helps a professional understand your home before suggesting a path.</p></div><ChevronRight size={17} className="feature-chevron" /></article>
-        <article className="feature-row" data-reveal><span className="feature-index">03</span><div className="feature-icon"><Wrench size={19} /></div><div><h3>Know the next step</h3><p>Leave the conversation understanding what was discussed and what follow-up may be useful.</p></div><ChevronRight size={17} className="feature-chevron" /></article>
-        <div className="system-note"><ShieldCheck size={15} /><span>The right equipment and service approach depend on your home, climate and an on-site assessment.</span></div>
-      </div>
+    <section className="expertise" id="services" aria-labelledby="expertise-title">
+      <div className="expertise-heading"><div><span className="eyebrow">02 / A WHOLE WORLD OF HOME COMFORT</span><h2 id="expertise-title">Good air.<br /><i>Better living.</i></h2></div><p>Twelve ways to start a better conversation about your home. Explore a service, then tell Elena what you need.</p></div>
+      <div className="service-gallery">{services.map(([headline, title, summary, image], index) => <article className={`comfort-card ${activeService === index ? 'active' : ''}`} key={title} onMouseEnter={() => { setActiveService(index); window.dispatchEvent(new CustomEvent('apex-service-hover', { detail: index })); }} onMouseLeave={() => { setActiveService(null); window.dispatchEvent(new CustomEvent('apex-service-hover', { detail: -1 })); }}>
+        <button className="service-image" onClick={requestSurvey} onFocus={() => setActiveService(index)} onBlur={() => setActiveService(null)} aria-label={`Ask Elena about ${title}`}><img src={image} alt={title === 'Heat pump systems' || index === 11 ? 'Residential heat pump beside a modern home' : 'HVAC service equipment and professional maintenance'} loading="lazy" width={800} height={520} /><span className="image-number">{String(index + 1).padStart(2, '0')} / APEX</span><span className="service-open"><ArrowUpRight size={22} /></span><span className="hover-headline">{headline}</span></button>
+        <div className="service-caption"><h3>{title}</h3><p>{summary}</p></div>
+      </article>)}</div>
+      <p className="expertise-note"><ShieldCheck size={15} /> Service availability, equipment suitability and recommendations depend on an on-site assessment. Images illustrate service categories, not completed Apex AI projects.</p>
     </section>
 
-    <section className="team-section" id="team">
-      <div className="team-intro" data-reveal><div><span className="eyebrow">02 / THE PEOPLE</span><h2>Good service starts<br /><i>with being heard.</i></h2></div><p>A useful first visit makes room for questions: hear what the homeowner needs, understand the home, and explain possible next steps in plain language.</p></div>
-      <div className="service-cards">
-        <article className="service-card" data-reveal data-depth><span className="card-number">01 / LISTEN</span><div className="service-glyph"><MapPin size={21} /></div><h3>Home &amp; comfort check</h3><p>Talk through the rooms, existing equipment, and the temperatures that feel right to you.</p><span className="card-rule" /></article>
-        <article className="service-card" data-reveal data-depth><span className="card-number">02 / PLAN</span><div className="service-glyph"><Wrench size={21} /></div><h3>Work planned together</h3><p>Discuss the proposed setup, access, controls and timing before work begins.</p><span className="card-rule" /></article>
-        <article className="service-card" data-reveal data-depth><span className="card-number">03 / FOLLOW UP</span><div className="service-glyph"><Clock3 size={21} /></div><h3>Support after the visit</h3><p>Understand what was completed and where to turn when service or maintenance is needed.</p><span className="card-rule" /></article>
-      </div>
-      <div className="directory-note" data-reveal><BadgeCheck size={16} /><p><strong>Professional details</strong><br />Profiles appear only after licensing and service-area information is verified. We do not list professional credentials here without supporting records.</p><button onClick={requestSurvey}>Ask about a service visit <ArrowUpRight size={14} /></button></div>
-    </section>
+    <section className="visit-story"><span className="eyebrow">03 / PEOPLE BEFORE EQUIPMENT</span><h2>Less uncertainty.<br /><i>More understanding.</i></h2><div className="visit-steps"><article><span>01 — LISTEN</span><h3>Start with your story.</h3><p>Tell Elena your name, contact details, property address and what you’re noticing. One clear question at a time.</p></article><article><span>02 — ARRANGE</span><h3>A time that works.</h3><p>Choose from live available visit times, review your details and confirm when you’re ready.</p></article><article><span>03 — UNDERSTAND</span><h3>Know what comes next.</h3><p>A professional can assess your home and explain the options. Cal.com handles your booking confirmation.</p></article></div><button className="visit-cta" onClick={requestSurvey}>Start with a conversation <ArrowUpRight size={17} /></button></section>
 
-    <section className="partner-section" id="partners">
-      <div className="partner-copy" data-reveal><span className="eyebrow">03 / FOR CONTRACTORS</span><h2>Better care takes<br /><i>good partners.</i></h2><p>A homeowner’s experience is shaped by the people behind the equipment. Apex AI gives contractors a way to explore a clearer path from first conversation to visit and ongoing care.</p><ul><li><Check size={15} /> A defined setup engagement</li><li><Check size={15} /> A consistent monthly retainer</li><li><Check size={15} /> A homeowner-first service journey</li></ul><button className="partner-link" onClick={requestSurvey}>Explore a partnership <ArrowUpRight size={15} /></button></div>
-      <div className="calculator glass-panel" data-reveal data-depth>
-        <div className="calc-top"><span>PARTNER PROGRAM / ESTIMATE</span><span className="calc-mark">A / 01</span></div>
-        <h3>View a sample partner estimate</h3>
-        <label className="range-label" htmlFor="partner-count">Partner accounts <strong>{partnerCount}</strong></label>
-        <input id="partner-count" type="range" min="1" max="12" step="1" value={partnerCount} onChange={(event) => setPartnerCount(Number(event.target.value))} />
-        <div className="range-ends"><span>1 partner</span><span>12 partners</span></div>
-        <div className="calc-primary"><span>Illustrative first-year gross</span><strong>${firstYearTotal.toLocaleString('en-US')}</strong></div>
-        <div className="calc-breakdown"><div><span>One-time setup</span><b>${setupTotal.toLocaleString('en-US')}</b></div><div><span>Monthly retainer</span><b>${monthlyTotal.toLocaleString('en-US')} / mo</b></div></div>
-        <p className="calc-disclaimer">Example only, before delivery costs. Uses $2,500 setup and $1,000 per month per account for 12 months.</p>
-        <button className="button button-light" onClick={requestSurvey}>Ask about working together <ArrowUpRight size={15} /></button>
-      </div>
-    </section>
-
-    <section className="reviews-section" id="reviews">
-      <div className="reviews-intro" data-reveal><span className="eyebrow">04 / HOMEOWNER FEEDBACK</span><h2>Trust grows from<br /><i>real experiences.</i></h2><p>Feedback should reflect a real visit and be shared with the homeowner’s permission.</p></div>
-      <div className="review-empty glass-panel" data-reveal data-depth><span className="review-seal"><ShieldCheck size={23} /></span><span className="eyebrow">REAL SERVICE, REAL VOICES</span><h3>Nothing made up.</h3><p>This space is for feedback from completed visits, shared with the homeowner’s permission. No rating or testimonial is published without that confirmation.</p><button onClick={requestSurvey}>Ask about a service visit <ArrowUpRight size={15} /></button></div>
-    </section>
-
-    <section className="closing-band" data-reveal><div><span className="eyebrow">THE NEXT STEP STARTS AT HOME</span><h2>A clearer plan<br /><i>starts here.</i></h2></div><button className="button button-primary" onClick={requestSurvey}>Arrange a visit <ArrowUpRight size={15} /></button></section>
-
-    <footer className="site-footer"><a className="brand" href="#top"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a><span className="footer-note">HOME HVAC / CARE, MADE CLEAR</span><button onClick={requestSurvey}>Start a conversation <ArrowUpRight size={14} /></button></footer>
-
-    <SiteMotion />
+    <section className="comfort-finale" id="finale"><div className="blinds" aria-hidden="true">{Array.from({ length: 12 }, (_, i) => <i key={i} style={{ '--blind': i } as React.CSSProperties} />)}</div><div className="finale-content"><span className="eyebrow">YOUR NEXT SEASON STARTS HERE</span><h2 className="split-headline" data-text="Comfort. Reimagined.">Comfort.<br /><i>Reimagined.</i></h2><p>Let’s make home feel like home again.</p><button className="finale-button" onClick={requestSurvey}>Talk to Elena <ArrowUpRight size={24} /></button><span className="finale-small">A REAL CONVERSATION. A CLEARER NEXT STEP.</span></div></section>
+    <footer className="experience-footer"><a className="brand" href="#top"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a><span>HOME COMFORT, CONSIDERED.</span><a href="#top">BACK TO TOP <ArrowUpRight size={14} /></a></footer>
+    <ExperienceMotion />
     <Concierge open={chatOpen} setOpen={setChatOpen} />
   </main>;
 }
