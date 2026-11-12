@@ -12,6 +12,7 @@ export default function ExperienceMotion() {
     const render = () => {
       const progress = Math.min(1, window.scrollY / (window.innerHeight * .85));
       root.style.setProperty('--hero-scroll', String(progress));
+      root.style.setProperty('--hero-photo-shift', `${progress * -28}px`);
       const finale = document.getElementById('finale');
       if (finale) {
         const bounds = finale.getBoundingClientRect();
@@ -33,10 +34,14 @@ export default function ExperienceMotion() {
       if (entry.isIntersecting) { entry.target.classList.add('in-view'); observer.unobserve(entry.target); }
     }), { threshold: .08 });
     root.querySelectorAll('.comfort-card, .comfort-intro, .visit-story, .expertise-heading').forEach(el => observer.observe(el));
+    const photoObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      entry.target.classList.toggle('photo-in-view', entry.isIntersecting);
+    }), { rootMargin: '120px 0px', threshold: .08 });
+    root.querySelectorAll('.service-image').forEach(el => photoObserver.observe(el));
     window.addEventListener('scroll', scroll, { passive: true });
     window.addEventListener('pointermove', move, { passive: true });
     render();
-    return () => { window.removeEventListener('scroll', scroll); window.removeEventListener('pointermove', move); observer.disconnect(); cancelAnimationFrame(frame); clearTimeout(timer); };
+    return () => { window.removeEventListener('scroll', scroll); window.removeEventListener('pointermove', move); observer.disconnect(); photoObserver.disconnect(); cancelAnimationFrame(frame); clearTimeout(timer); };
   }, []);
   return null;
 }
