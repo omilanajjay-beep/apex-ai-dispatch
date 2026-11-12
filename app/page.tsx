@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import ComfortScene from './components/ComfortScene';
 import ExperienceMotion from './components/ExperienceMotion';
+import ComfortSystemsCarousel from './components/ComfortSystemsCarousel';
 
 type Role = 'assistant' | 'user';
 type ChatMessage = { role: Role; text: string };
@@ -244,6 +245,8 @@ export default function Home() {
     </section>
 
     <section className="comfort-intro" id="approach"><span className="eyebrow">01 / THE APEX APPROACH</span><div><h2>Your home has a rhythm.<br /><i>We help you find it.</i></h2><p>Not just equipment. The room that never cools down. The first cold morning. The air your family breathes. Tell us what you notice — we’ll help make the next step clear.</p></div><span className="intro-index">A / AI</span></section>
+
+    <ComfortSystemsCarousel onPlanVisit={requestSurvey} />
 
     <section className="expertise" id="services" aria-labelledby="expertise-title">
       <div className="expertise-heading"><div><span className="eyebrow">02 / A WHOLE WORLD OF HOME COMFORT</span><h2 id="expertise-title">Good air.<br /><i>Better living.</i></h2></div><p>Twelve ways to start a better conversation about your home. Explore a service, then tell Elena what you need.</p></div>
