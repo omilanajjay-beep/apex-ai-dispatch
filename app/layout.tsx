@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Apex AI | Home HVAC Care, Made Clear',
   description: 'Apex AI helps homeowners start clear conversations with HVAC professionals about comfort, service visits and the next step.',
   applicationName: 'Apex AI',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://apex-ai-dispatch.onrender.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://apex-ai-dispatch.vercel.app'),
   alternates: { canonical: '/' },
   icons: { icon: '/favicon.svg' },
   openGraph: {
@@ -25,5 +25,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><head><link rel="preload" as="image" href="/apex-hvac-hero-4k.jpeg" fetchPriority="high" /></head><body>{children}</body></html>;
 }

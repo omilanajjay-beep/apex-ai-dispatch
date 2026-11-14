@@ -24,6 +24,7 @@ import {
 import ComfortScene from './components/ComfortScene';
 import ExperienceMotion from './components/ExperienceMotion';
 import ComfortSystemsCarousel from './components/ComfortSystemsCarousel';
+import HVACPricingGuide from './components/HVACPricingGuide';
 
 type Role = 'assistant' | 'user';
 type ChatMessage = { role: Role; text: string };
@@ -60,7 +61,7 @@ function formatSlotDay(value: string, timeZone: string) {
   return new Intl.DateTimeFormat('en', { weekday: 'short', month: 'short', day: 'numeric', timeZone }).format(new Date(Date.UTC(year, month - 1, day, 12)));
 }
 
-function Concierge({ open, setOpen }: { open: boolean; setOpen: (next: boolean) => void }) {
+function Concierge({ open, setOpen, quoteService }: { open: boolean; setOpen: (next: boolean) => void; quoteService: string | null }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', text: 'Hi, I’m Elena, Apex AI’s visit coordinator. Let’s start with your home and what you need. What name would you like me to use?' },
   ]);
@@ -126,7 +127,10 @@ function Concierge({ open, setOpen }: { open: boolean; setOpen: (next: boolean) 
         return;
       }
       if (!data.accepted) return;
-      setIntake((current) => ({ ...current, [field]: data.value }));
+      const savedValue = field === 'problem' && quoteService
+        ? `Quote request — ${quoteService}. Customer reports: ${data.value}`
+        : data.value;
+      setIntake((current) => ({ ...current, [field]: savedValue }));
       if (data.complete) {
         setStep(intakeFields.length);
         await loadSlots();
@@ -175,6 +179,7 @@ function Concierge({ open, setOpen }: { open: boolean; setOpen: (next: boolean) 
         <div className="chat-title"><span className="eyebrow">DISPATCH CONCIERGE</span><h2>Elena <span className="online-label"><i /> ready</span></h2></div>
         <button className="icon-button" onClick={() => setOpen(false)} aria-label="Close chat"><X size={18} /></button>
       </header>
+      {quoteService && <p className="chat-quote-context"><span>ON-SITE QUOTE REQUEST</span>Elena will collect your details and help arrange an assessment for {quoteService.toLowerCase()}.</p>}
       <div className="chat-messages" aria-live="polite">
         {messages.map((message, index) => <div key={`${message.role}-${index}`} className={`chat-bubble ${message.role}`}>{message.text}</div>)}
         {busy && <div className="chat-bubble assistant typing"><span /><span /><span /></div>}
@@ -206,7 +211,7 @@ function Concierge({ open, setOpen }: { open: boolean; setOpen: (next: boolean) 
 }
 
 const services = [
-  ['Cooling, restored.', 'Air conditioning repair', 'Uneven temperatures, warm air or an unfamiliar sound? Start with a clear diagnosis, not a guess.', '/hvac-service.webp'],
+  ['Cooling, restored.', 'Air conditioning repair', 'Uneven temperatures, warm air or an unfamiliar sound? Start with a clear diagnosis, not a guess.', '/apex-hvac-outdoor-service.jpeg'],
   ['Warmth, without worry.', 'Heating & furnace care', 'Talk through cold rooms, heating interruptions and the next step toward a comfortable home.', '/hvac-detail.jpg'],
   ['A smarter kind of comfort.', 'Heat pump systems', 'Explore heating and cooling in one system, with a plan suited to your home and climate.', '/hvac-heatpump.jpg'],
   ['Small system. Big difference.', 'Ductless mini-splits', 'Discuss targeted comfort for a new room, a home office or a space your existing system misses.', '/hvac-detail.jpg'],
@@ -225,43 +230,46 @@ export default function Home() {
   const [chatOpen, setChatOpen] = useState(false);
   const [light, setLight] = useState(false);
   const [activeService, setActiveService] = useState<number | null>(null);
-  const requestSurvey = () => { setChatOpen(true); setMenuOpen(false); };
+  const [quoteService, setQuoteService] = useState<string | null>(null);
+  const requestSurvey = (service?: string) => { setQuoteService(service ?? null); setChatOpen(true); setMenuOpen(false); };
 
   return <main className={`experience ${light ? 'theme-light' : ''}`} id="top">
     <ComfortScene />
     <nav className="experience-nav" aria-label="Main navigation">
       <a className="brand" href="#top" aria-label="Apex AI home"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a>
       <div id="primary-links" className={`experience-links ${menuOpen ? 'open' : ''}`}>
-        <a href="#services" onClick={() => setMenuOpen(false)}>Our expertise</a><a href="#approach" onClick={() => setMenuOpen(false)}>The Apex approach</a><a href="#finale" onClick={() => setMenuOpen(false)}>Let’s talk</a>
+        <a href="#services" onClick={() => setMenuOpen(false)}>Our expertise</a><a href="#pricing" onClick={() => setMenuOpen(false)}>Price guide</a><a href="#approach" onClick={() => setMenuOpen(false)}>The Apex approach</a><a href="#finale" onClick={() => setMenuOpen(false)}>Let’s talk</a>
       </div>
-      <div className="nav-tools"><button className="theme-toggle" onClick={() => setLight(!light)} aria-label={light ? 'Switch to dark theme' : 'Switch to light theme'}>{light ? <Moon size={17} /> : <Sun size={17} />}</button><button className="visit-cta" onClick={requestSurvey}>Plan a visit <ArrowUpRight size={16} /></button><button className="menu-toggle" aria-expanded={menuOpen} aria-controls="primary-links" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}>{menuOpen ? <X size={21} /> : <Menu size={21} />}</button></div>
+      <div className="nav-tools"><button className="theme-toggle" onClick={() => setLight(!light)} aria-label={light ? 'Switch to dark theme' : 'Switch to light theme'}>{light ? <Moon size={17} /> : <Sun size={17} />}</button><button className="visit-cta" onClick={() => requestSurvey('HVAC assessment and quote')}>Request a quote <ArrowUpRight size={16} /></button><button className="menu-toggle" aria-expanded={menuOpen} aria-controls="primary-links" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}>{menuOpen ? <X size={21} /> : <Menu size={21} />}</button></div>
     </nav>
 
     <section className="comfort-hero" aria-labelledby="comfort-title">
-      <div className="hero-photograph"><img src="/hvac-heatpump.jpg" alt="Outdoor heat pump beside a bright modern home" fetchPriority="high" /><div className="photo-shade" /></div>
+      <div className="hero-photograph"><img src="/apex-hvac-hero-4k.jpeg" alt="HVAC technician diagnosing a heating and cooling system at a service bench" fetchPriority="high" width="4096" height="3072" /><div className="photo-shade" /></div>
       <div className="hero-topline"><span className="eyebrow">APEX AI / HEATING · COOLING · HOME COMFORT</span><span className="edition">A BREATH OF SOMETHING BETTER — 01</span></div>
-      <div className="comfort-heading"><h1 id="comfort-title"><span className="headline-first">Feel at home.</span><span className="headline-second"><i>In every season.</i></span></h1><div className="hero-bottom-copy"><p>Real homes. Real comfort.<br />Thoughtful HVAC care, from the first conversation to the next clear step.</p><button className="round-link" onClick={requestSurvey}><span>Find your comfort</span><span className="round-arrow"><ArrowUpRight size={23} /></span></button></div></div>
-      <div className="hero-bottomline"><a href="#services">SCROLL TO EXPLORE <ArrowDownRight size={15} /></a><span>HEATING / COOLING / EVERYTHING BETWEEN</span></div>
+      <div className="comfort-heading"><h1 id="comfort-title"><span className="headline-first">Feel at home.</span><span className="headline-second"><i>In every season.</i></span></h1><div className="hero-bottom-copy"><p>Real homes. Real comfort.<br />Thoughtful HVAC care, a clearer price range and the next right step.</p><div className="hero-quote-actions"><button className="round-link" onClick={() => requestSurvey('HVAC assessment and quote')}><span>Request a clear quote</span><span className="round-arrow"><ArrowUpRight size={23} /></span></button><a className="hero-price-link" href="#pricing">Explore price ranges <ArrowDownRight size={15} /></a></div></div></div>
+      <div className="hero-bottomline"><a href="#pricing">SCROLL FOR CLEARER PRICING <ArrowDownRight size={15} /></a><span>HEATING / COOLING / EVERYTHING BETWEEN</span></div>
     </section>
 
     <section className="comfort-intro" id="approach"><span className="eyebrow">01 / THE APEX APPROACH</span><div><h2>Your home has a rhythm.<br /><i>We help you find it.</i></h2><p>Not just equipment. The room that never cools down. The first cold morning. The air your family breathes. Tell us what you notice — we’ll help make the next step clear.</p></div><span className="intro-index">A / AI</span></section>
 
+    <HVACPricingGuide onRequestQuote={requestSurvey} />
+
     <ComfortSystemsCarousel onPlanVisit={requestSurvey} />
 
     <section className="expertise" id="services" aria-labelledby="expertise-title">
-      <div className="expertise-heading"><div><span className="eyebrow">02 / A WHOLE WORLD OF HOME COMFORT</span><h2 id="expertise-title">Good air.<br /><i>Better living.</i></h2></div><p>Twelve ways to start a better conversation about your home. Explore a service, then tell Elena what you need.</p></div>
+      <div className="expertise-heading"><div><span className="eyebrow">03 / A WHOLE WORLD OF HOME COMFORT</span><h2 id="expertise-title">Good air.<br /><i>Better living.</i></h2></div><p>Twelve ways to start a better conversation about your home. Explore a service, then tell Elena what you need.</p></div>
       <div className="service-gallery">{services.map(([headline, title, summary, image], index) => <article className={`comfort-card ${activeService === index ? 'active' : ''}`} key={title} onMouseEnter={() => { setActiveService(index); window.dispatchEvent(new CustomEvent('apex-service-hover', { detail: index })); }} onMouseLeave={() => { setActiveService(null); window.dispatchEvent(new CustomEvent('apex-service-hover', { detail: -1 })); }}>
-        <button className="service-image" onClick={requestSurvey} onFocus={() => setActiveService(index)} onBlur={() => setActiveService(null)} aria-label={`Ask Elena about ${title}`}><img src={image} alt={title === 'Heat pump systems' || index === 11 ? 'Residential heat pump beside a modern home' : 'HVAC service equipment and professional maintenance'} loading="lazy" width={800} height={520} /><span className="image-number">{String(index + 1).padStart(2, '0')} / APEX</span><span className="service-open"><ArrowUpRight size={22} /></span><span className="hover-headline">{headline}</span></button>
+        <button className="service-image" onClick={() => requestSurvey()} onFocus={() => setActiveService(index)} onBlur={() => setActiveService(null)} aria-label={`Ask Elena about ${title}`}><img src={image} alt={title === 'Heat pump systems' || index === 11 ? 'Residential heat pump beside a modern home' : 'HVAC service equipment and professional maintenance'} loading="lazy" width={800} height={520} /><span className="image-number">{String(index + 1).padStart(2, '0')} / APEX</span><span className="service-open"><ArrowUpRight size={22} /></span><span className="hover-headline">{headline}</span></button>
         <div className="service-caption"><h3>{title}</h3><p>{summary}</p></div>
       </article>)}</div>
       <p className="expertise-note"><ShieldCheck size={15} /> Service availability, equipment suitability and recommendations depend on an on-site assessment. Images illustrate service categories, not completed Apex AI projects.</p>
     </section>
 
-    <section className="visit-story"><span className="eyebrow">03 / PEOPLE BEFORE EQUIPMENT</span><h2>Less uncertainty.<br /><i>More understanding.</i></h2><div className="visit-steps"><article><span>01 — LISTEN</span><h3>Start with your story.</h3><p>Tell Elena your name, contact details, property address and what you’re noticing. One clear question at a time.</p></article><article><span>02 — ARRANGE</span><h3>A time that works.</h3><p>Choose from live available visit times, review your details and confirm when you’re ready.</p></article><article><span>03 — UNDERSTAND</span><h3>Know what comes next.</h3><p>A professional can assess your home and explain the options. Cal.com handles your booking confirmation.</p></article></div><button className="visit-cta" onClick={requestSurvey}>Start with a conversation <ArrowUpRight size={17} /></button></section>
+    <section className="visit-story"><span className="eyebrow">04 / PEOPLE BEFORE EQUIPMENT</span><h2>Less uncertainty.<br /><i>More understanding.</i></h2><div className="visit-steps"><article><span>01 — LISTEN</span><h3>Start with your story.</h3><p>Tell Elena your name, contact details, property address and what you’re noticing. One clear question at a time.</p></article><article><span>02 — ARRANGE</span><h3>A time that works.</h3><p>Choose from live available visit times, review your details and confirm when you’re ready.</p></article><article><span>03 — UNDERSTAND</span><h3>Know what comes next.</h3><p>A professional can assess your home and explain the options. Cal.com handles your booking confirmation.</p></article></div><button className="visit-cta" onClick={() => requestSurvey()}>Start with a conversation <ArrowUpRight size={17} /></button></section>
 
-    <section className="comfort-finale" id="finale"><div className="blinds" aria-hidden="true">{Array.from({ length: 12 }, (_, i) => <i key={i} style={{ '--blind': i } as React.CSSProperties} />)}</div><div className="finale-content"><span className="eyebrow">YOUR NEXT SEASON STARTS HERE</span><h2 className="split-headline" data-text="Comfort. Reimagined.">Comfort.<br /><i>Reimagined.</i></h2><p>Let’s make home feel like home again.</p><button className="finale-button" onClick={requestSurvey}>Talk to Elena <ArrowUpRight size={24} /></button><span className="finale-small">A REAL CONVERSATION. A CLEARER NEXT STEP.</span></div></section>
+    <section className="comfort-finale" id="finale"><div className="blinds" aria-hidden="true">{Array.from({ length: 12 }, (_, i) => <i key={i} style={{ '--blind': i } as React.CSSProperties} />)}</div><div className="finale-content"><span className="eyebrow">YOUR NEXT SEASON STARTS HERE</span><h2 className="split-headline" data-text="Comfort. Reimagined.">Comfort.<br /><i>Reimagined.</i></h2><p>Let’s make home feel like home again.</p><button className="finale-button" onClick={() => requestSurvey()}>Talk to Elena <ArrowUpRight size={24} /></button><span className="finale-small">A REAL CONVERSATION. A CLEARER NEXT STEP.</span></div></section>
     <footer className="experience-footer"><a className="brand" href="#top"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a><span>HOME COMFORT, CONSIDERED.</span><a href="#top">BACK TO TOP <ArrowUpRight size={14} /></a></footer>
     <ExperienceMotion />
-    <Concierge open={chatOpen} setOpen={setChatOpen} />
+    <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} />
   </main>;
 }
