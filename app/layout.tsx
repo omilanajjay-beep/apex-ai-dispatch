@@ -31,8 +31,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet" />
-        <link rel="preload" as="fetch" href="https://assets.uberdesigner.ai/easylog/log-bare.webp" crossOrigin="anonymous" />
-        <link rel="preload" as="fetch" href="https://assets.uberdesigner.ai/easylog/log-moss.webp" crossOrigin="anonymous" />
+        <link rel="preload" as="fetch" href="/apex-hvac/base-mobile.webp" crossOrigin="anonymous" media="(max-width: 1023px)" />
+        <link rel="preload" as="fetch" href="/apex-hvac/airflow-mobile.webp" crossOrigin="anonymous" media="(max-width: 1023px)" />
+        <link rel="preload" as="fetch" href="/apex-hvac/base-desktop.webp" crossOrigin="anonymous" media="(min-width: 1024px)" />
+        <link rel="preload" as="fetch" href="/apex-hvac/airflow-desktop.webp" crossOrigin="anonymous" media="(min-width: 1024px)" />
       </head>
       <body>{children}</body>
     </html>

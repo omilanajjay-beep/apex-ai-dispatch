@@ -42,9 +42,10 @@ export const Hero: React.FC = () => {
           }
         };
 
+        const imageTier = window.matchMedia('(max-width: 1023px)').matches ? 'mobile' : 'desktop';
         const [bare, moss] = await Promise.all([
-          fetchImageWithProgress('https://assets.uberdesigner.ai/easylog/log-bare.webp', updateProgress),
-          fetchImageWithProgress('https://assets.uberdesigner.ai/easylog/log-moss.webp', updateProgress),
+          fetchImageWithProgress(`/apex-hvac/base-${imageTier}.webp`, updateProgress),
+          fetchImageWithProgress(`/apex-hvac/airflow-${imageTier}.webp`, updateProgress),
         ]);
 
         if (isStale) return;

@@ -15,7 +15,7 @@ const loader = read('app/zip-template/lib/loadImages.ts');
 const tokens = read('app/zip-template/styles/tokens.css');
 const zipGlobalCss = read('app/zip-template/styles/global.css');
 
- test('Apex displays the original ZIP page rather than the prior HVAC adaptation or legacy sections', () => {
+test('Apex displays the original ZIP page rather than the prior HVAC adaptation or legacy sections', () => {
   assert.match(page, /import \{ Hero \} from '\.\/zip-template\/components\/Hero'/);
   assert.match(page, /<Hero \/>/);
   assert.match(page, /<Cursor \/>/);
@@ -28,14 +28,28 @@ const zipGlobalCss = read('app/zip-template/styles/global.css');
   assert.match(nav, /https:\/\/assets\.uberdesigner\.ai\/easylog\/logo\.svg/);
 });
 
-test('original ZIP bare/moss artwork and image-loading path are preserved', () => {
-  assert.match(hero, /fetchImageWithProgress\('https:\/\/assets\.uberdesigner\.ai\/easylog\/log-bare\.webp'/);
-  assert.match(hero, /fetchImageWithProgress\('https:\/\/assets\.uberdesigner\.ai\/easylog\/log-moss\.webp'/);
+test('HVAC base and airflow reveal use responsive, lightweight, paired local images', () => {
+  assert.match(hero, /const imageTier = window\.matchMedia\('\(max-width: 1023px\)'\)\.matches \? 'mobile' : 'desktop'/);
+  assert.match(hero, /fetchImageWithProgress\(`\/apex-hvac\/base-\$\{imageTier\}\.webp`, updateProgress\)/);
+  assert.match(hero, /fetchImageWithProgress\(`\/apex-hvac\/airflow-\$\{imageTier\}\.webp`, updateProgress\)/);
+  assert.doesNotMatch(hero, /easylog\/log-(?:bare|moss)\.webp/);
+  for (const tier of ['mobile', 'desktop']) {
+    const base = fs.readFileSync(path.join(__dirname, '..', 'public', 'apex-hvac', `base-${tier}.webp`));
+    const airflow = fs.readFileSync(path.join(__dirname, '..', 'public', 'apex-hvac', `airflow-${tier}.webp`));
+    assert.equal(base.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(base.toString('ascii', 8, 12), 'WEBP');
+    assert.equal(airflow.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(airflow.toString('ascii', 8, 12), 'WEBP');
+    assert.ok(base.length + airflow.length < (tier === 'mobile' ? 75_000 : 140_000), `${tier} image pair should stay lightweight`);
+  }
   assert.match(canvas, /targetCtx\.drawImage\(bareImg/);
   assert.match(canvas, /targetCtx\.drawImage\(mossImg/);
   assert.match(loader, /const response = await fetch\(url\)/);
-  assert.match(layout, /log-bare\.webp/);
-  assert.match(layout, /log-moss\.webp/);
+  assert.match(layout, /href="\/apex-hvac\/base-mobile\.webp"[^>]*media="\(max-width: 1023px\)"/);
+  assert.match(layout, /href="\/apex-hvac\/airflow-mobile\.webp"[^>]*media="\(max-width: 1023px\)"/);
+  assert.match(layout, /href="\/apex-hvac\/base-desktop\.webp"[^>]*media="\(min-width: 1024px\)"/);
+  assert.match(layout, /href="\/apex-hvac\/airflow-desktop\.webp"[^>]*media="\(min-width: 1024px\)"/);
+  assert.doesNotMatch(layout, /log-(?:bare|moss)\.webp/);
 });
 
 test('original ZIP layout and motion modules are used without changing their viewport design', () => {
@@ -67,7 +81,7 @@ test('Contact and Deploy dispatch open Elena, with no added launcher and the boo
   assert.match(page, /fetch\('\/api\/book'/);
 });
 
-test('ZIP global styles, fonts, title and original remote-image preloads are loaded by Next', () => {
+test('ZIP global styles, fonts, title and responsive image preloads are loaded by Next', () => {
   assert.match(layout, /import '\.\/zip-template\/styles\/tokens\.css'/);
   assert.match(layout, /import '\.\/zip-template\/styles\/global\.css'/);
   assert.match(layout, /Apex AI Dispatch — Every thermal zone tells a story\./);
