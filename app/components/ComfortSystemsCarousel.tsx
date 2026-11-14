@@ -1,8 +1,6 @@
 'use client';
-
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
-
 const STAGE_SIZE = 1080;
 const FACE_WIDTH = 560;
 const FACE_HEIGHT = 720;
@@ -606,8 +604,24 @@ export default function ComfortSystemsCarousel({ onPlanVisit }: { onPlanVisit: (
   const stageRef = useRef<HTMLDivElement>(null);
   const webglRef = useRef<HTMLCanvasElement>(null);
   const flatRef = useRef<HTMLCanvasElement>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    if (typeof IntersectionObserver === 'undefined') { setReady(true); return; }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setReady(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: '400px 0px' });
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
     const stage = stageRef.current;
     const webglCanvas = webglRef.current;
     const flatCanvas = flatRef.current;
@@ -636,7 +650,7 @@ export default function ComfortSystemsCarousel({ onPlanVisit }: { onPlanVisit: (
     stage.dataset.renderer = renderWebGL ? 'webgl2' : 'flat';
 
     let alive = true;
-    let visible = true;
+    let visible = typeof IntersectionObserver === 'undefined';
     let raf = 0;
     let lastTime = 0;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -711,7 +725,7 @@ export default function ComfortSystemsCarousel({ onPlanVisit }: { onPlanVisit: (
       else delete window.__MANUAL;
       if (renderWebGL) webglCanvas.getContext('webgl2')?.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, []);
+  }, [ready]);
 
   return (
     <section className="comfort-metrics-section" aria-labelledby="comfort-metrics-title">

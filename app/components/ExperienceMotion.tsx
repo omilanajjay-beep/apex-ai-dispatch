@@ -38,10 +38,14 @@ export default function ExperienceMotion() {
       entry.target.classList.toggle('photo-in-view', entry.isIntersecting);
     }), { rootMargin: '120px 0px', threshold: .08 });
     root.querySelectorAll('.service-image').forEach(el => photoObserver.observe(el));
+    const storyObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      entry.target.classList.toggle('in-view', entry.isIntersecting);
+    }), { rootMargin: '120px 0px', threshold: .01 });
+    root.querySelectorAll('.hvac-story').forEach(el => storyObserver.observe(el));
     window.addEventListener('scroll', scroll, { passive: true });
     window.addEventListener('pointermove', move, { passive: true });
     render();
-    return () => { window.removeEventListener('scroll', scroll); window.removeEventListener('pointermove', move); observer.disconnect(); photoObserver.disconnect(); cancelAnimationFrame(frame); clearTimeout(timer); };
+    return () => { window.removeEventListener('scroll', scroll); window.removeEventListener('pointermove', move); observer.disconnect(); photoObserver.disconnect(); storyObserver.disconnect(); cancelAnimationFrame(frame); clearTimeout(timer); };
   }, []);
   return null;
 }

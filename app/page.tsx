@@ -21,10 +21,10 @@ import {
   Wrench,
   X,
 } from 'lucide-react';
-import ComfortScene from './components/ComfortScene';
+import DeferredComfortScene from './components/DeferredComfortScene';
 import ExperienceMotion from './components/ExperienceMotion';
 import ComfortSystemsCarousel from './components/ComfortSystemsCarousel';
-import HVACPricingGuide from './components/HVACPricingGuide';
+import HVACStory from './components/HVACStory';
 
 type Role = 'assistant' | 'user';
 type ChatMessage = { role: Role; text: string };
@@ -234,25 +234,25 @@ export default function Home() {
   const requestSurvey = (service?: string) => { setQuoteService(service ?? null); setChatOpen(true); setMenuOpen(false); };
 
   return <main className={`experience ${light ? 'theme-light' : ''}`} id="top">
-    <ComfortScene />
+    <DeferredComfortScene />
     <nav className="experience-nav" aria-label="Main navigation">
       <a className="brand" href="#top" aria-label="Apex AI home"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a>
       <div id="primary-links" className={`experience-links ${menuOpen ? 'open' : ''}`}>
-        <a href="#services" onClick={() => setMenuOpen(false)}>Our expertise</a><a href="#pricing" onClick={() => setMenuOpen(false)}>Price guide</a><a href="#approach" onClick={() => setMenuOpen(false)}>The Apex approach</a><a href="#finale" onClick={() => setMenuOpen(false)}>Let’s talk</a>
+        <a href="#services" onClick={() => setMenuOpen(false)}>Our expertise</a><a href="#hvac-story" onClick={() => setMenuOpen(false)}>Comfort in motion</a><a href="#approach" onClick={() => setMenuOpen(false)}>The Apex approach</a><a href="#finale" onClick={() => setMenuOpen(false)}>Let’s talk</a>
       </div>
       <div className="nav-tools"><button className="theme-toggle" onClick={() => setLight(!light)} aria-label={light ? 'Switch to dark theme' : 'Switch to light theme'}>{light ? <Moon size={17} /> : <Sun size={17} />}</button><button className="visit-cta" onClick={() => requestSurvey('HVAC assessment and quote')}>Request a quote <ArrowUpRight size={16} /></button><button className="menu-toggle" aria-expanded={menuOpen} aria-controls="primary-links" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}>{menuOpen ? <X size={21} /> : <Menu size={21} />}</button></div>
     </nav>
 
     <section className="comfort-hero" aria-labelledby="comfort-title">
-      <div className="hero-photograph"><img src="/apex-hvac-hero-4k.jpeg" alt="HVAC technician diagnosing a heating and cooling system at a service bench" fetchPriority="high" width="4096" height="3072" /><div className="photo-shade" /></div>
+      <div className="hero-photograph"><img src="/apex-hvac-hero-1280.webp" srcSet="/apex-hvac-hero-768.webp 768w, /apex-hvac-hero-1280.webp 1280w, /apex-hvac-hero-1920.webp 1920w, /apex-hvac-hero-2560.webp 2560w" sizes="100vw" alt="HVAC technician diagnosing a heating and cooling system at a service bench" fetchPriority="high" decoding="async" width="4096" height="3072" /><div className="photo-shade" /></div>
       <div className="hero-topline"><span className="eyebrow">APEX AI / HEATING · COOLING · HOME COMFORT</span><span className="edition">A BREATH OF SOMETHING BETTER — 01</span></div>
-      <div className="comfort-heading"><h1 id="comfort-title"><span className="headline-first">Feel at home.</span><span className="headline-second"><i>In every season.</i></span></h1><div className="hero-bottom-copy"><p>Real homes. Real comfort.<br />Thoughtful HVAC care, a clearer price range and the next right step.</p><div className="hero-quote-actions"><button className="round-link" onClick={() => requestSurvey('HVAC assessment and quote')}><span>Request a clear quote</span><span className="round-arrow"><ArrowUpRight size={23} /></span></button><a className="hero-price-link" href="#pricing">Explore price ranges <ArrowDownRight size={15} /></a></div></div></div>
-      <div className="hero-bottomline"><a href="#pricing">SCROLL FOR CLEARER PRICING <ArrowDownRight size={15} /></a><span>HEATING / COOLING / EVERYTHING BETWEEN</span></div>
+      <div className="comfort-heading"><h1 id="comfort-title"><span className="headline-first">Feel at home.</span><span className="headline-second"><i>In every season.</i></span></h1><div className="hero-bottom-copy"><p>Real homes. Real comfort.<br />Thoughtful HVAC care, a considered approach and the next right step.</p><div className="hero-quote-actions"><button className="round-link" onClick={() => requestSurvey('HVAC assessment and quote')}><span>Request a clear quote</span><span className="round-arrow"><ArrowUpRight size={23} /></span></button><a className="hero-price-link" href="#hvac-story">Discover the comfort story <ArrowDownRight size={15} /></a></div></div></div>
+      <div className="hero-bottomline"><a href="#hvac-story">SCROLL INTO COMFORT <ArrowDownRight size={15} /></a><span>HEATING / COOLING / EVERYTHING BETWEEN</span></div>
     </section>
 
     <section className="comfort-intro" id="approach"><span className="eyebrow">01 / THE APEX APPROACH</span><div><h2>Your home has a rhythm.<br /><i>We help you find it.</i></h2><p>Not just equipment. The room that never cools down. The first cold morning. The air your family breathes. Tell us what you notice — we’ll help make the next step clear.</p></div><span className="intro-index">A / AI</span></section>
 
-    <HVACPricingGuide onRequestQuote={requestSurvey} />
+    <HVACStory onRequestQuote={requestSurvey} />
 
     <ComfortSystemsCarousel onPlanVisit={requestSurvey} />
 

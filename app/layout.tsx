@@ -25,5 +25,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><head><link rel="preload" as="image" href="/apex-hvac-hero-4k.jpeg" fetchPriority="high" /></head><body>{children}</body></html>;
+  return <html lang="en"><head><link rel="preload" as="image" href="/apex-hvac-hero-1280.webp" imageSrcSet="/apex-hvac-hero-768.webp 768w, /apex-hvac-hero-1280.webp 1280w, /apex-hvac-hero-1920.webp 1920w, /apex-hvac-hero-2560.webp 2560w" imageSizes="100vw" fetchPriority="high" /></head><body>{children}</body></html>;
 }
