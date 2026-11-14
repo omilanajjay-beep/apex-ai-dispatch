@@ -11,8 +11,6 @@ import {
   Snowflake,
   X,
 } from 'lucide-react';
-import { Hero } from './zip-template/components/Hero';
-import { Cursor } from './zip-template/components/Cursor';
 
 type Role = 'assistant' | 'user';
 type ChatMessage = { role: Role; text: string };
@@ -199,28 +197,22 @@ function Concierge({ open, setOpen, quoteService, showLauncher = true }: { open:
 }
 
 export default function Home() {
-  const heroRoot = useRef<HTMLDivElement>(null);
+  const experience = useRef<HTMLIFrameElement>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [quoteService, setQuoteService] = useState<string | null>(null);
   useEffect(() => {
-    const root = heroRoot.current;
-    if (!root) return;
-    const openChatFromZip = (event: MouseEvent) => {
-      if (!(event.target instanceof Element)) return;
-      const link = event.target.closest('a');
-      const label = link?.textContent?.trim();
-      if (label !== 'Contact' && label !== 'Deploy dispatch') return;
-      event.preventDefault();
+    const openChatFromExperience = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin || event.source !== experience.current?.contentWindow) return;
+      if (event.data?.type !== 'apex:open-elena') return;
       setQuoteService('HVAC service visit');
       setChatOpen(true);
     };
-    root.addEventListener('click', openChatFromZip);
-    return () => root.removeEventListener('click', openChatFromZip);
+    window.addEventListener('message', openChatFromExperience);
+    return () => window.removeEventListener('message', openChatFromExperience);
   }, []);
 
   return <>
-    <div ref={heroRoot}><Hero /></div>
-    <Cursor />
+    <iframe ref={experience} src="/apex-experience.html" title="Apex AI — Autonomous dispatch and seamless client flow" style={{ position: 'fixed', inset: 0, width: '100%', height: '100dvh', border: 0, background: '#030305' }} />
     <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} showLauncher={false} />
   </>;
 }

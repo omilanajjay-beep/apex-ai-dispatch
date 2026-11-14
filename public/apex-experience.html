@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Apex AI — Autonomous Dispatch &amp; Seamless Client Flow</title>
+<!-- Google Fonts: Inter & Outfit -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Outfit:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #030305;
+            color: #F8FAFC;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        /* Custom smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030305;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E1E2D;
+            border-radius: 3px;
+        }
+        .glass-panel {
+            background: rgba(18, 18, 26, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-panel-light {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        /* 3D Flip Card utilities */
+        .perspective-1000 {
+            perspective: 1200px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        /* Canvas absolute fill */
+        #webgl-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .content-layer {
+            position: relative;
+            z-index: 10;
+        }
+        /* Glowing spotlight utility */
+        .spotlight-text {
+            background: linear-gradient(90deg, #FFFFFF 0%, #00F0FF 50%, #FFB800 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(0, 240, 255, 0.4);
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.-bottom-32{bottom:-8rem}.-left-32{left:-8rem}.-right-32{right:-8rem}.-top-32{top:-8rem}.left-0{left:0px}.top-0{top:0px}.z-10{z-index:10}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mt-6{margin-top:1.5rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-12{height:3rem}.h-2{height:0.5rem}.h-2\.5{height:0.625rem}.h-3{height:0.75rem}.h-80{height:20rem}.h-9{height:2.25rem}.h-96{height:24rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-12{width:3rem}.w-2{width:0.5rem}.w-2\.5{width:0.625rem}.w-3{width:0.75rem}.w-9{width:2.25rem}.w-96{width:24rem}.w-full{width:100%}.max-w-2xl{max-width:42rem}.max-w-3xl{max-width:48rem}.max-w-4xl{max-width:56rem}.max-w-6xl{max-width:72rem}.max-w-lg{max-width:32rem}.max-w-sm{max-width:24rem}.max-w-xl{max-width:36rem}@keyframes ping{75%, 100%{transform:scale(2);opacity:0}}.animate-ping{animation:ping 1s cubic-bezier(0, 0, 0.2, 1) infinite}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-10{gap:2.5rem}.gap-12{gap:3rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-x-1 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.25rem * var(--tw-space-x-reverse));margin-left:calc(0.25rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-4 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem * var(--tw-space-x-reverse));margin-left:calc(1rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-8 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(2rem * var(--tw-space-x-reverse));margin-left:calc(2rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-10 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2.5rem * var(--tw-space-y-reverse))}.space-y-16 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(4rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(4rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-20 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-y-8 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.scroll-smooth{scroll-behavior:smooth}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-\[40px\]{border-radius:40px}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.rounded-t-\[50px\]{border-top-left-radius:50px;border-top-right-radius:50px}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-apex-cyan\/25{border-color:rgb(0 240 255 / 0.25)}.border-apex-cyan\/30{border-color:rgb(0 240 255 / 0.3)}.border-apex-gold\/30{border-color:rgb(255 184 0 / 0.3)}.border-apex-orange\/30{border-color:rgb(255 85 0 / 0.3)}.border-purple-500\/30{border-color:rgb(168 85 247 / 0.3)}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-white\/5{border-color:rgb(255 255 255 / 0.05)}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-amber-500\/10{background-color:rgb(245 158 11 / 0.1)}.bg-apex-black{--tw-bg-opacity:1;background-color:rgb(3 3 5 / var(--tw-bg-opacity, 1))}.bg-apex-cyan{--tw-bg-opacity:1;background-color:rgb(0 240 255 / var(--tw-bg-opacity, 1))}.bg-apex-cyan\/10{background-color:rgb(0 240 255 / 0.1)}.bg-apex-cyan\/15{background-color:rgb(0 240 255 / 0.15)}.bg-apex-gold\/15{background-color:rgb(255 184 0 / 0.15)}.bg-apex-orange\/10{background-color:rgb(255 85 0 / 0.1)}.bg-apex-orange\/15{background-color:rgb(255 85 0 / 0.15)}.bg-apex-surface{--tw-bg-opacity:1;background-color:rgb(10 10 14 / var(--tw-bg-opacity, 1))}.bg-blue-500\/10{background-color:rgb(59 130 246 / 0.1)}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-cyan-400{--tw-bg-opacity:1;background-color:rgb(34 211 238 / var(--tw-bg-opacity, 1))}.bg-cyan-500{--tw-bg-opacity:1;background-color:rgb(6 182 212 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/10{background-color:rgb(16 185 129 / 0.1)}.bg-indigo-500\/10{background-color:rgb(99 102 241 / 0.1)}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-purple-500\/15{background-color:rgb(168 85 247 / 0.15)}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/5{background-color:rgb(255 255 255 / 0.05)}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.bg-gradient-to-tr{background-image:linear-gradient(to top right, var(--tw-gradient-stops))}.from-apex-cyan{--tw-gradient-from:#00F0FF var(--tw-gradient-from-position);--tw-gradient-to:rgb(0 240 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-apex-gold{--tw-gradient-from:#FFB800 var(--tw-gradient-from-position);--tw-gradient-to:rgb(255 184 0 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-apex-orange{--tw-gradient-from:#FF5500 var(--tw-gradient-from-position);--tw-gradient-to:rgb(255 85 0 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-purple-500{--tw-gradient-from:#a855f7 var(--tw-gradient-from-position);--tw-gradient-to:rgb(168 85 247 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-white{--tw-gradient-from:#fff var(--tw-gradient-from-position);--tw-gradient-to:rgb(255 255 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-apex-blue{--tw-gradient-to:rgb(0 112 243 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #0070F3 var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-slate-500{--tw-gradient-to:rgb(100 116 139 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #64748b var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-apex-blue{--tw-gradient-to:#0070F3 var(--tw-gradient-to-position)}.to-apex-cyan{--tw-gradient-to:#00F0FF var(--tw-gradient-to-position)}.to-apex-gold{--tw-gradient-to:#FFB800 var(--tw-gradient-to-position)}.to-apex-orange{--tw-gradient-to:#FF5500 var(--tw-gradient-to-position)}.to-slate-950{--tw-gradient-to:#020617 var(--tw-gradient-to-position)}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.p-10{padding:2.5rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-28{padding-top:7rem;padding-bottom:7rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-12{padding-bottom:3rem}.pb-4{padding-bottom:1rem}.pt-10{padding-top:2.5rem}.pt-2{padding-top:0.5rem}.pt-24{padding-top:6rem}.pt-4{padding-top:1rem}.pt-6{padding-top:1.5rem}.text-center{text-align:center}.font-display{font-family:Outfit, sans-serif}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-\[12vw\]{font-size:12vw}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-light{font-weight:300}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-tighter{letter-spacing:-0.05em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6 / var(--tw-text-opacity, 1))}.text-apex-black{--tw-text-opacity:1;color:rgb(3 3 5 / var(--tw-text-opacity, 1))}.text-apex-cyan{--tw-text-opacity:1;color:rgb(0 240 255 / var(--tw-text-opacity, 1))}.text-apex-gold{--tw-text-opacity:1;color:rgb(255 184 0 / var(--tw-text-opacity, 1))}.text-apex-orange{--tw-text-opacity:1;color:rgb(255 85 0 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-purple-400{--tw-text-opacity:1;color:rgb(192 132 252 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-transparent{color:transparent}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.placeholder-slate-600::placeholder{--tw-placeholder-opacity:1;color:rgb(71 85 105 / var(--tw-placeholder-opacity, 1))}.accent-apex-cyan{accent-color:#00F0FF}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_-30px_60px_rgba\(0\2c 0\2c 0\2c 0\.6\)\]{--tw-shadow:0 -30px 60px rgba(0,0,0,0.6);--tw-shadow-colored:0 -30px 60px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-apex-cyan\/20{--tw-shadow-color:rgb(0 240 255 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-apex-cyan\/30{--tw-shadow-color:rgb(0 240 255 / 0.3);--tw-shadow:var(--tw-shadow-colored)}.shadow-apex-cyan\/40{--tw-shadow-color:rgb(0 240 255 / 0.4);--tw-shadow:var(--tw-shadow-colored)}.blur-3xl{--tw-blur:blur(64px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-700{transition-duration:700ms}.selection\:bg-apex-cyan *::selection{--tw-bg-opacity:1;background-color:rgb(0 240 255 / var(--tw-bg-opacity, 1))}.selection\:text-apex-black *::selection{--tw-text-opacity:1;color:rgb(3 3 5 / var(--tw-text-opacity, 1))}.selection\:bg-apex-cyan::selection{--tw-bg-opacity:1;background-color:rgb(0 240 255 / var(--tw-bg-opacity, 1))}.selection\:text-apex-black::selection{--tw-text-opacity:1;color:rgb(3 3 5 / var(--tw-text-opacity, 1))}.hover\:border-amber-500:hover{--tw-border-opacity:1;border-color:rgb(245 158 11 / var(--tw-border-opacity, 1))}.hover\:border-blue-500:hover{--tw-border-opacity:1;border-color:rgb(59 130 246 / var(--tw-border-opacity, 1))}.hover\:border-emerald-500:hover{--tw-border-opacity:1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.hover\:border-indigo-500:hover{--tw-border-opacity:1;border-color:rgb(99 102 241 / var(--tw-border-opacity, 1))}.hover\:bg-apex-cyan\/20:hover{background-color:rgb(0 240 255 / 0.2)}.hover\:bg-cyan-300:hover{--tw-bg-opacity:1;background-color:rgb(103 232 249 / var(--tw-bg-opacity, 1))}.hover\:text-apex-cyan:hover{--tw-text-opacity:1;color:rgb(0 240 255 / var(--tw-text-opacity, 1))}.hover\:opacity-95:hover{opacity:0.95}.focus\:not-sr-only:focus{position:static;width:auto;height:auto;padding:0;margin:0;overflow:visible;clip:auto;white-space:normal}.focus\:absolute:focus{position:absolute}.focus\:z-50:focus{z-index:50}.focus\:border-apex-cyan:focus{--tw-border-opacity:1;border-color:rgb(0 240 255 / var(--tw-border-opacity, 1))}.focus\:bg-apex-cyan:focus{--tw-bg-opacity:1;background-color:rgb(0 240 255 / var(--tw-bg-opacity, 1))}.focus\:p-4:focus{padding:1rem}.focus\:text-apex-black:focus{--tw-text-opacity:1;color:rgb(3 3 5 / var(--tw-text-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width: 640px){.sm\:w-auto{width:auto}.sm\:flex-row{flex-direction:row}}@media (min-width: 768px){.md\:col-span-2{grid-column:span 2 / span 2}.md\:flex{display:flex}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:rounded-t-\[80px\]{border-top-left-radius:80px;border-top-right-radius:80px}.md\:p-16{padding:4rem}.md\:text-5xl{font-size:3rem;line-height:1}.md\:text-6xl{font-size:3.75rem;line-height:1}.md\:text-8xl{font-size:6rem;line-height:1}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-xl{font-size:1.25rem;line-height:1.75rem}}</style>
+<style>
+  .hero-grid{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(360px,1.1fr);gap:clamp(2rem,6vw,6rem);align-items:center}
+  .hero-copy{position:relative;z-index:3;min-width:0}
+  .hero-copy h1{font-size:clamp(2.75rem,5.2vw,6rem);overflow-wrap:anywhere}
+  .hero-visual{position:relative;z-index:2;min-height:clamp(360px,56vw,650px);overflow:hidden;border-radius:2rem;border:1px solid rgba(255,255,255,.14);box-shadow:0 28px 90px rgba(0,240,255,.15)}
+  .hero-visual img{width:100%;height:100%;min-height:inherit;object-fit:cover;object-position:62% center;filter:saturate(1.08) contrast(1.03)}
+  .hero-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,240,255,.12),transparent 42%,rgba(3,3,5,.18));pointer-events:none}
+  .hero-visual figcaption{position:absolute;left:1rem;bottom:1rem;z-index:1;padding:.55rem .8rem;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(3,3,5,.62);backdrop-filter:blur(10px);font:500 .7rem/1.2 'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#d6faff}
+  .legal-trigger{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer}
+  .legal-modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:1.25rem;background:rgba(0,0,0,.72);backdrop-filter:blur(12px)}
+  .legal-modal[hidden]{display:none}
+  .legal-dialog{max-width:32rem;padding:2rem;border:1px solid rgba(0,240,255,.35);border-radius:1.5rem;background:#0b0b10;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+  .legal-dialog button{float:right;color:#00f0ff;font-size:1.4rem;background:none;border:0;cursor:pointer}
+  @media (max-width:767px){.hero-section{align-items:flex-start}.hero-grid{grid-template-columns:1fr;gap:2rem}.hero-visual{min-height:330px;border-radius:1.5rem}.hero-visual img{object-position:68% center}.hero-copy h1{font-size:clamp(3rem,15vw,5rem)}header{padding-left:1rem!important;padding-right:1rem!important;gap:.6rem}header .space-x-4{gap:.45rem}header #flip-toggle-btn{display:none}header [data-open-elena]{padding:.6rem .75rem;font-size:.62rem;white-space:nowrap}header .text-xl{font-size:1rem}}
+  @media (prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}.group-hover\:rotate-y-180:hover .card-inner{transform:none!important}}
+</style></head>
+<body class="bg-apex-black text-slate-100 selection:bg-apex-cyan selection:text-apex-black">
+<!-- Skip Link for Accessibility -->
+<a class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-apex-cyan focus:text-apex-black" href="#main-content">
+        Skip to main content
+    </a>
+<!-- WebGL Canvas Container -->
+<canvas height="881" id="webgl-canvas" style="width: 1248px; height: 881px;" width="1248"></canvas>
+<!-- Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 px-6 py-4 flex items-center justify-between glass-panel border-b border-white/5">
+<div class="flex items-center space-x-3">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-apex-cyan via-apex-blue to-apex-gold flex items-center justify-center shadow-lg shadow-apex-cyan/20">
+<span class="font-display font-extrabold text-apex-black text-sm">AX</span>
+</div>
+<span class="font-display font-bold text-xl tracking-wider text-white">APEX <span class="text-apex-cyan">AI</span></span>
+</div>
+<div class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+<a class="hover:text-apex-cyan transition-colors" href="#screen-1">Vision</a>
+<a class="hover:text-apex-cyan transition-colors" href="#screen-2">Dispatch Stream</a>
+<a class="hover:text-apex-cyan transition-colors" href="#screen-3">Telemetry</a>
+<a class="hover:text-apex-cyan transition-colors" href="#screen-4">Core Engine</a>
+<a class="hover:text-apex-cyan transition-colors" href="#screen-5">ROI Simulator</a>
+<a class="hover:text-apex-cyan transition-colors" href="#screen-6">Contractors</a>
+</div>
+<div class="flex items-center space-x-4">
+<button class="px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-full bg-apex-cyan/10 hover:bg-apex-cyan/20 text-apex-cyan transition-all border border-apex-cyan/25" id="flip-toggle-btn">
+                Auto-Flip: ON
+            </button>
+<button class="px-5 py-2 text-xs font-semibold uppercase tracking-wider rounded-full bg-gradient-to-r from-apex-cyan to-apex-blue text-apex-black font-bold shadow-md shadow-apex-cyan/30 hover:opacity-95 transition-opacity" type="button" data-open-elena>Book Live Demo</button>
+</div>
+</header>
+<!-- Main Pinned Scroll Journey (7 Screens) -->
+<main class="content-layer" id="main-content">
+<!-- SCREEN 1: The Awakening (Hero & 3D Compressor Mesh) -->
+<section class="hero-section min-h-screen w-full flex items-center relative px-6 pt-24 pb-14" id="screen-1">
+  <div class="hero-grid max-w-6xl w-full mx-auto">
+    <div class="hero-copy space-y-6">
+      <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-apex-cyan uppercase tracking-widest font-semibold shadow-inner">
+        <span class="w-2 h-2 rounded-full bg-apex-cyan animate-pulse"></span>
+        <span>Autonomous HVAC Intelligence</span>
+      </div>
+      <h1 class="font-display text-5xl md:text-8xl font-black tracking-tight text-white leading-none">AUTONOMOUS DISPATCH.<br><span class="spotlight-text">SEAMLESS CLIENT FLOW.</span></h1>
+      <p class="text-slate-300 text-lg md:text-xl font-light max-w-2xl">Close your eyes to missed emergency calls and chaotic scheduling. Apex AI unifies 24/7 intelligent voice booking, instant CRM syncing, and predictive contractor dispatch.</p>
+      <div class="pt-2 flex flex-col sm:flex-row items-start gap-4">
+        <button class="w-full sm:w-auto px-8 py-4 rounded-full bg-apex-cyan text-apex-black font-bold text-sm hover:bg-cyan-300 transition-colors shadow-2xl shadow-apex-cyan/40" type="button" data-open-elena>Book Live Demo</button>
+        <a class="w-full sm:w-auto px-8 py-4 rounded-full border border-white/15 bg-white/5 text-white font-semibold text-sm hover:border-apex-cyan hover:text-apex-cyan transition-colors text-center" href="#screen-2">Explore the system ↓</a>
+      </div>
+    </div>
+    <figure class="hero-visual">
+      <img src="/apex-client-relationship.webp" alt="HVAC technician and homeowner reviewing a service plan together on a tablet" loading="eager" fetchpriority="high">
+    </figure>
+  </div>
+</section>
+<!-- SCREEN 2: The Shift & River of Light -->
+<section class="min-h-screen w-full flex flex-col items-center justify-center relative px-6" id="screen-2">
+<div class="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+<div class="space-y-6">
+<span class="text-apex-orange text-xs font-mono uppercase tracking-widest font-semibold">Illustrative Dispatch Stream</span>
+<h2 class="font-display text-4xl md:text-6xl font-extrabold text-white leading-tight">
+                        your dispatch, <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-apex-orange to-apex-gold">brought to light.</span>
+</h2>
+<p class="text-slate-300 text-base leading-relaxed">
+                        As midnight emergency calls arrive, our neural engine instantly cross-references van spare parts inventory, live technician locations, and traffic density to dispatch the optimal crew in seconds.
+                    </p>
+<div class="flex items-center space-x-4 text-xs font-mono text-slate-400">
+<div class="flex items-center space-x-2">
+<span class="text-apex-cyan">⚡ 99.9%</span>
+<span>Illustrative Voice Accuracy</span>
+</div>
+<span>•</span>
+<div class="flex items-center space-x-2">
+<span class="text-apex-gold">⚡ 4.2s</span>
+<span>Illustrative Average Dispatch Time</span>
+</div>
+</div>
+</div>
+<div class="glass-panel p-8 rounded-3xl space-y-6 border border-white/10 shadow-2xl">
+<div class="flex items-center justify-between border-b border-white/10 pb-4">
+<span class="text-xs font-mono text-slate-400">ILLUSTRATIVE AI DISPATCH STREAM</span>
+<span class="px-2.5 py-1 rounded-full bg-apex-cyan/15 text-apex-cyan text-xs font-medium">Autonomous</span>
+</div>
+<div class="space-y-4">
+<div class="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
+<div>
+<div class="text-sm font-semibold text-white">Emergency AC Failure</div>
+<div class="text-xs text-slate-400">Client: Miller Residence (Sector 7)</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs">Dispatched</span>
+</div>
+<div class="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
+<div>
+<div class="text-sm font-semibold text-white">Preventative Heater Tune-Up</div>
+<div class="text-xs text-slate-400">Client: Sterling Commercial Plaza</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-apex-gold/15 text-apex-gold font-mono text-xs">Auto-Scheduled</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SCREEN 3: Frosted Rhythm Rings & Insight Section -->
+<section class="min-h-screen w-full bg-white text-slate-900 py-28 px-6 flex flex-col items-center justify-center relative rounded-t-[50px] md:rounded-t-[80px] shadow-[0_-30px_60px_rgba(0,0,0,0.6)]" id="screen-3">
+<div class="max-w-6xl w-full space-y-20">
+<!-- 5 Dotted Rhythm Rings Simulation Header -->
+<div class="flex items-center justify-center space-x-3">
+<div class="w-3 h-3 rounded-full bg-cyan-500 animate-ping"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+<div class="w-3 h-3 rounded-full bg-amber-500"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+<div class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></div>
+</div>
+<div class="text-center space-y-4 max-w-3xl mx-auto">
+<span class="text-xs font-mono uppercase tracking-widest text-blue-600 font-bold">Telemetry Architecture</span>
+<h2 class="font-display text-4xl md:text-6xl font-black tracking-tight text-slate-900">
+                        a little insight. a better client flow.
+                    </h2>
+<p class="text-slate-600 text-lg">
+                        Apex AI continuously monitors customer heating and cooling profiles to deliver preventative maintenance alerts before breakdowns occur.
+                    </p>
+</div>
+<!-- 2x2 Feature Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 shadow-xl space-y-4 hover:border-blue-500 transition-colors">
+<div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600 font-bold text-xl">01</div>
+<h3 class="font-display text-2xl font-bold text-slate-900">Predictive Compressor Health</h3>
+<p class="text-slate-600 text-sm leading-relaxed">IoT sensor integration forecasts motor degradation weeks in advance, locking in high-ticket repair contracts automatically.</p>
+</div>
+<div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 shadow-xl space-y-4 hover:border-amber-500 transition-colors">
+<div class="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 font-bold text-xl">02</div>
+<h3 class="font-display text-2xl font-bold text-slate-900">Instant SMS Quote Engine</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Homeowners receive accurate SEER efficiency and replacement estimates instantly on their phones while on the phone with AI dispatch.</p>
+</div>
+<div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 shadow-xl space-y-4 hover:border-indigo-500 transition-colors">
+<div class="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 font-bold text-xl">03</div>
+<h3 class="font-display text-2xl font-bold text-slate-900">Smart Route Optimization</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Algorithmic scheduling matches technician skill sets, spare inventory in van, and live city traffic for maximum daily job completion.</p>
+</div>
+<div class="p-8 rounded-3xl bg-slate-50 border border-slate-200 shadow-xl space-y-4 hover:border-emerald-500 transition-colors">
+<div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 font-bold text-xl">04</div>
+<h3 class="font-display text-2xl font-bold text-slate-900">Lifetime Client Vault</h3>
+<p class="text-slate-600 text-sm leading-relaxed">Store complete HVAC serial numbers, filter sizes, warranty expiration dates, and maintenance agreements in one tap.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- SCREEN 4: Auto-Flipping Interactive 3D Cards Showcase -->
+<section class="min-h-screen w-full bg-apex-surface py-28 px-6 flex flex-col items-center justify-center relative" id="screen-4">
+<div class="max-w-6xl w-full space-y-16">
+<div class="text-center space-y-4 max-w-2xl mx-auto">
+<span class="text-apex-cyan text-xs font-mono uppercase tracking-widest font-semibold">Autonomous Integration Suite</span>
+<h2 class="font-display text-4xl md:text-6xl font-extrabold text-white">
+                        Engineered for High-Growth HVAC Contractors
+                    </h2>
+<p class="text-slate-400 text-base">
+                        Hover or watch as our 3D cards auto-flip to reveal deep technical specifications and performance multipliers.
+                    </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Card 1: 24/7 AI Voice Dispatch -->
+<div class="h-80 perspective-1000 group cursor-pointer">
+<div class="relative w-full h-full duration-700 transform-style-3d group-hover:rotate-y-180 card-inner">
+<div class="absolute inset-0 w-full h-full glass-panel rounded-3xl p-8 flex flex-col justify-between backface-hidden border border-white/10">
+<div class="w-12 h-12 rounded-2xl bg-apex-cyan/15 flex items-center justify-center text-apex-cyan font-bold text-xl">01</div>
+<div>
+<h3 class="font-display text-2xl font-bold text-white mb-2">24/7 AI Voice Dispatch</h3>
+<p class="text-slate-400 text-sm">Never miss an emergency call at 3 AM. Natural human-like conversational AI answers, qualifies, and books jobs directly.</p>
+</div>
+<div class="text-xs font-semibold text-apex-cyan uppercase tracking-wider flex items-center space-x-1">
+<span>Inspect Metrics</span> <span>→</span>
+</div>
+</div>
+<div class="absolute inset-0 w-full h-full bg-apex-black text-white rounded-3xl p-8 rotate-y-180 flex flex-col justify-between backface-hidden border border-apex-cyan/30">
+<div class="text-xs font-mono text-apex-cyan">ILLUSTRATIVE SCENARIO</div>
+<div class="space-y-3">
+<div class="text-4xl font-black font-display text-apex-cyan">+100%</div>
+<p class="text-slate-300 text-xs">After-hours call capture rate with zero missed customer inquiries or dropped voicemails.</p>
+</div>
+<div class="text-xs text-slate-500">Click to flip back</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Cal.com & Google Calendar Sync -->
+<div class="h-80 perspective-1000 group cursor-pointer">
+<div class="relative w-full h-full duration-700 transform-style-3d group-hover:rotate-y-180 card-inner">
+<div class="absolute inset-0 w-full h-full glass-panel rounded-3xl p-8 flex flex-col justify-between backface-hidden border border-white/10">
+<div class="w-12 h-12 rounded-2xl bg-apex-gold/15 flex items-center justify-center text-apex-gold font-bold text-xl">02</div>
+<div>
+<h3 class="font-display text-2xl font-bold text-white mb-2">Instant Cal.com Booking Sync</h3>
+<p class="text-slate-400 text-sm">Bidirectional calendar synchronization ensuring technician availability is always up to date across mobile and desktop.</p>
+</div>
+<div class="text-xs font-semibold text-apex-gold uppercase tracking-wider flex items-center space-x-1">
+<span>Inspect Metrics</span> <span>→</span>
+</div>
+</div>
+<div class="absolute inset-0 w-full h-full bg-apex-black text-white rounded-3xl p-8 rotate-y-180 flex flex-col justify-between backface-hidden border border-apex-gold/30">
+<div class="text-xs font-mono text-apex-gold">ILLUSTRATIVE SCENARIO</div>
+<div class="space-y-3">
+<div class="text-4xl font-black font-display text-apex-gold">0 Min</div>
+<p class="text-slate-300 text-xs">Manual scheduling friction eliminated; instant confirmation sent via SMS and email.</p>
+</div>
+<div class="text-xs text-slate-500">Click to flip back</div>
+</div>
+</div>
+</div>
+<!-- Card 3: GoHighLevel CRM Integration -->
+<div class="h-80 perspective-1000 group cursor-pointer">
+<div class="relative w-full h-full duration-700 transform-style-3d group-hover:rotate-y-180 card-inner">
+<div class="absolute inset-0 w-full h-full glass-panel rounded-3xl p-8 flex flex-col justify-between backface-hidden border border-white/10">
+<div class="w-12 h-12 rounded-2xl bg-purple-500/15 flex items-center justify-center text-purple-400 font-bold text-xl">03</div>
+<div>
+<h3 class="font-display text-2xl font-bold text-white mb-2">GoHighLevel CRM Integration</h3>
+<p class="text-slate-400 text-sm">Seamlessly push lead pipelines, customer review requests, and automated follow-up sequences directly into GHL.</p>
+</div>
+<div class="text-xs font-semibold text-purple-400 uppercase tracking-wider flex items-center space-x-1">
+<span>Inspect Metrics</span> <span>→</span>
+</div>
+</div>
+<div class="absolute inset-0 w-full h-full bg-apex-black text-white rounded-3xl p-8 rotate-y-180 flex flex-col justify-between backface-hidden border border-purple-500/30">
+<div class="text-xs font-mono text-purple-400">ILLUSTRATIVE SCENARIO</div>
+<div class="space-y-3">
+<div class="text-4xl font-black font-display text-purple-400">3.5x</div>
+<p class="text-slate-300 text-xs">Increase in customer lifetime review generation and automated seasonal tune-up bookings.</p>
+</div>
+<div class="text-xs text-slate-500">Click to flip back</div>
+</div>
+</div>
+</div>
+<!-- Card 4: Automated SMS Follow-ups -->
+<div class="h-80 perspective-1000 group cursor-pointer">
+<div class="relative w-full h-full duration-700 transform-style-3d group-hover:rotate-y-180 card-inner">
+<div class="absolute inset-0 w-full h-full glass-panel rounded-3xl p-8 flex flex-col justify-between backface-hidden border border-white/10">
+<div class="w-12 h-12 rounded-2xl bg-apex-orange/15 flex items-center justify-center text-apex-orange font-bold text-xl">04</div>
+<div>
+<h3 class="font-display text-2xl font-bold text-white mb-2">Automated SMS Follow-ups</h3>
+<p class="text-slate-400 text-sm">Trigger instant text alerts when technicians are en route, complete with live GPS map tracking links for homeowners.</p>
+</div>
+<div class="text-xs font-semibold text-apex-orange uppercase tracking-wider flex items-center space-x-1">
+<span>Inspect Metrics</span> <span>→</span>
+</div>
+</div>
+<div class="absolute inset-0 w-full h-full bg-apex-black text-white rounded-3xl p-8 rotate-y-180 flex flex-col justify-between backface-hidden border border-apex-orange/30">
+<div class="text-xs font-mono text-apex-orange">ILLUSTRATIVE SCENARIO</div>
+<div class="space-y-3">
+<div class="text-4xl font-black font-display text-apex-orange">99.4%</div>
+<p class="text-slate-300 text-xs">Customer satisfaction rating due to extreme transparency and real-time technician ETA alerts.</p>
+</div>
+<div class="text-xs text-slate-500">Click to flip back</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SCREEN 5: Live Interactive Demo & ROI Calculator -->
+<section class="min-h-screen w-full bg-apex-black py-28 px-6 flex flex-col items-center justify-center relative" id="screen-5">
+<div class="max-w-4xl w-full glass-panel p-10 md:p-16 rounded-[40px] border border-white/10 shadow-2xl space-y-10 relative overflow-hidden">
+<div class="absolute -top-32 -right-32 w-96 h-96 bg-apex-cyan/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-32 -left-32 w-96 h-96 bg-apex-orange/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="text-center space-y-4 relative z-10">
+<span class="px-3.5 py-1.5 rounded-full bg-apex-cyan/15 text-apex-cyan text-xs font-mono uppercase tracking-widest font-semibold">Illustrative ROI Simulator</span>
+<h2 class="font-display text-4xl md:text-5xl font-extrabold text-white">
+                        Model a possible HVAC revenue lift
+                    </h2>
+<p class="text-slate-400 text-sm md:text-base max-w-lg mx-auto">
+                        Adjust the sample volume below to explore a directional scenario. These numbers are illustrative, not verified performance claims.
+                    </p>
+</div>
+<div class="space-y-8 relative z-10 max-w-xl mx-auto">
+<div>
+<div class="flex justify-between text-sm font-mono mb-2">
+<span class="text-slate-400">Monthly Service Calls:</span>
+<span class="text-apex-cyan font-bold text-lg" id="calls-val">250</span>
+</div>
+<input class="w-full accent-apex-cyan cursor-pointer" id="calls-slider" max="1000" min="50" step="25" type="range" value="250"/>
+</div>
+<div class="grid grid-cols-2 gap-6 p-6 rounded-3xl bg-white/5 border border-white/10 text-center">
+<div>
+<div class="text-xs font-mono text-slate-400 mb-1">Recovered After-Hours Calls</div>
+<div class="font-display text-3xl font-black text-white" id="recovered-val">63 /mo</div>
+</div>
+<div>
+<div class="text-xs font-mono text-slate-400 mb-1">Estimated Net Revenue Gain</div>
+<div class="font-display text-3xl font-black text-apex-cyan" id="revenue-val">$25,200</div>
+</div>
+</div>
+<div class="booking-panel space-y-4 pt-4">
+  <button class="w-full py-4 rounded-2xl bg-gradient-to-r from-apex-cyan to-apex-blue text-apex-black font-extrabold text-sm tracking-wider uppercase shadow-lg shadow-apex-cyan/30 hover:opacity-95 transition-opacity" type="button" data-open-elena>Talk with Elena about a pilot</button>
+  <p class="text-center text-xs text-slate-500">Elena handles intake and confirms the right next step. No form submission happens on this page.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- SCREEN 6: Social Proof & Contractor Testimonials -->
+<section class="min-h-screen w-full bg-apex-surface py-28 px-6 flex flex-col items-center justify-center relative" id="screen-6">
+<div class="max-w-6xl w-full space-y-16">
+<div class="text-center space-y-4 max-w-2xl mx-auto">
+<span class="text-apex-orange text-xs font-mono uppercase tracking-widest font-semibold">Illustrative Contractor Scenarios</span>
+<h2 class="font-display text-4xl md:text-6xl font-extrabold text-white">
+                        A clearer client flow, shown in scenarios
+                    </h2>
+<p class="text-slate-400 text-base">
+                        The examples below are illustrative scenarios, not verified customer endorsements.
+                    </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="glass-panel p-8 rounded-3xl space-y-6 flex flex-col justify-between border border-white/10">
+<p class="text-slate-300 text-sm leading-relaxed italic">
+                            "We used to miss 30% of our emergency calls over the weekend. With Apex AI answering and dispatching autonomously, our monthly revenue jumped by $35k in the first 60 days."
+                        </p>
+<div class="flex items-center space-x-4 border-t border-white/10 pt-4">
+<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-apex-cyan to-apex-blue flex items-center justify-center font-bold text-apex-black">JD</div>
+<div>
+<div class="text-sm font-bold text-white">Scenario: weekend operator</div>
+<div class="text-xs text-slate-400">Illustrative contractor scenario</div>
+</div>
+</div>
+</div>
+<div class="glass-panel p-8 rounded-3xl space-y-6 flex flex-col justify-between border border-white/10">
+<p class="text-slate-300 text-sm leading-relaxed italic">
+                            "The Cal.com and GoHighLevel integration is seamless. Our techs never have to guess their route or check paper schedules anymore. Absolute game-changer for our 12-van fleet."
+                        </p>
+<div class="flex items-center space-x-4 border-t border-white/10 pt-4">
+<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-apex-gold to-apex-orange flex items-center justify-center font-bold text-apex-black">SM</div>
+<div>
+<div class="text-sm font-bold text-white">Scenario: multi-van operator</div>
+<div class="text-xs text-slate-400">Illustrative contractor scenario</div>
+</div>
+</div>
+</div>
+<div class="glass-panel p-8 rounded-3xl space-y-6 flex flex-col justify-between border border-white/10">
+<p class="text-slate-300 text-sm leading-relaxed italic">
+                            "The 3D thermostat telemetry alerts our customers before their compressor overheats. Client trust and annual maintenance agreement renewals are at an all-time high."
+                        </p>
+<div class="flex items-center space-x-4 border-t border-white/10 pt-4">
+<div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-apex-cyan flex items-center justify-center font-bold text-apex-black">RT</div>
+<div>
+<div class="text-sm font-bold text-white">Scenario: service-plan operator</div>
+<div class="text-xs text-slate-400">Illustrative contractor scenario</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SCREEN 7: Pitch Black Footer & Wordmark -->
+<footer class="w-full bg-apex-black pt-24 pb-12 px-6 border-t border-white/10 relative z-10">
+<div class="max-w-6xl mx-auto space-y-20">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+<div class="space-y-4 md:col-span-2">
+<div class="flex items-center space-x-3">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-apex-cyan via-apex-blue to-apex-gold flex items-center justify-center">
+<span class="font-display font-extrabold text-apex-black text-sm">AX</span>
+</div>
+<span class="font-display font-bold text-xl tracking-wider text-white">APEX <span class="text-apex-cyan">AI</span></span>
+</div>
+<p class="text-slate-400 text-sm max-w-sm">
+                            Autonomous HVAC dispatch, voice intelligence, and client relationship management built for modern contractors.
+                        </p>
+</div>
+<div>
+<h4 class="text-xs font-mono uppercase tracking-widest text-slate-400 mb-4">Platform</h4>
+<ul class="space-y-2 text-sm text-slate-300">
+<li><a class="hover:text-apex-cyan transition-colors" href="#screen-1">Vision</a></li>
+<li><a class="hover:text-apex-cyan transition-colors" href="#screen-2">Dispatch Stream</a></li>
+<li><a class="hover:text-apex-cyan transition-colors" href="#screen-4">Integrations</a></li>
+<li><a class="hover:text-apex-cyan transition-colors" href="#screen-5">ROI Calculator</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-xs font-mono uppercase tracking-widest text-slate-400 mb-4">Legal</h4>
+<ul class="space-y-2 text-sm text-slate-300">
+<li><button class="legal-trigger hover:text-apex-cyan transition-colors" type="button" data-legal="privacy">Privacy</button></li>
+<li><button class="legal-trigger hover:text-apex-cyan transition-colors" type="button" data-legal="terms">Terms</button></li>
+<li><button class="legal-trigger hover:text-apex-cyan transition-colors" type="button" data-legal="security">Security</button></li>
+</ul>
+</div>
+</div>
+<!-- Full-Width Gradient Wordmark (Crisp at top, softening towards baseline) -->
+<div class="pt-10 border-t border-white/5 text-center">
+<h2 class="font-display font-black text-[12vw] leading-none tracking-tighter bg-gradient-to-b from-white via-slate-500 to-slate-950 bg-clip-text text-transparent select-none">
+                        APEX AI
+                    </h2>
+<p class="text-xs text-slate-500 font-mono mt-6">
+                        © 2026 Apex AI Technologies. All rights reserved. Built with Three.js WebGL &amp; Tailwind CSS.
+                    </p>
+</div>
+</div>
+</footer>
+</main>
+
+
+<div class="legal-modal" id="legal-modal" hidden role="dialog" aria-modal="true" aria-labelledby="legal-title">
+  <div class="legal-dialog">
+    <button type="button" aria-label="Close legal note" data-close-legal>×</button>
+    <div class="text-xs font-mono uppercase tracking-widest text-apex-cyan mb-4" id="legal-kicker">Apex AI note</div>
+    <h2 class="font-display text-2xl font-bold text-white mb-3" id="legal-title">A short, truthful note</h2>
+    <p class="text-slate-300 text-sm leading-relaxed" id="legal-copy">Elena processes the details you enter to coordinate your visit. Booking details are sent to Cal.com when you confirm an appointment. Cal.com handles booking emails. This page does not represent a certification or security guarantee.</p>
+  </div>
+</div>
+<script type="module">
+import * as THREE from '/apex-reference-assets/three.module.min.js';
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = document.getElementById('webgl-canvas');
+let renderer, scene, camera, compressorMesh, particleField;
+try {
+if (canvas && !reducedMotion) {
+  renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  scene = new THREE.Scene(); camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight,.1,1000); camera.position.z=5;
+  const mouse={x:0,y:0,tx:0,ty:0}; addEventListener('mousemove',e=>{mouse.tx=e.clientX/innerWidth*2-1;mouse.ty=-(e.clientY/innerHeight)*2+1});
+  compressorMesh=new THREE.Mesh(new THREE.TorusKnotGeometry(1.2,.38,96,24),new THREE.MeshStandardMaterial({color:0x00f0ff,roughness:.25,metalness:.85,emissive:0x001522})); scene.add(compressorMesh);
+  scene.add(new THREE.AmbientLight(0xffffff,.75)); const a=new THREE.PointLight(0x00f0ff,3.2,50);a.position.set(6,6,6);scene.add(a);const b=new THREE.PointLight(0xffb800,2.5,50);b.position.set(-6,-6,6);scene.add(b);
+  const positions=new Float32Array(1000*3); for(let i=0;i<positions.length;i+=3){positions[i]=(Math.random()-.5)*16;positions[i+1]=(Math.random()-.5)*16;positions[i+2]=(Math.random()-.5)*10} const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.BufferAttribute(positions,3));particleField=new THREE.Points(pg,new THREE.PointsMaterial({size:.03,color:0x00f0ff,transparent:true,opacity:.5}));scene.add(particleField);
+  const clock=new THREE.Clock(); function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();mouse.x+=(mouse.tx-mouse.x)*.05;mouse.y+=(mouse.ty-mouse.y)*.05;compressorMesh.rotation.x=mouse.y*.7+t*.2;compressorMesh.rotation.y=mouse.x*.7+t*.25;particleField.rotation.y=t*.04;renderer.render(scene,camera)} animate();
+  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+}
+} catch (error) { console.warn('Decorative WebGL unavailable; page controls remain active.'); }
+function flipCard(card){const inner=card.querySelector('.card-inner');const isFlipped=card.classList.toggle('is-flipped');inner.style.transform=isFlipped?'rotateY(180deg)':'rotateY(0deg)';card.setAttribute('aria-pressed',String(isFlipped));}
+document.querySelectorAll('.perspective-1000').forEach(card=>{card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-pressed','false');card.addEventListener('click',()=>flipCard(card));card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flipCard(card)}})});
+let autoFlipActive=!reducedMotion;const flipToggle=document.getElementById('flip-toggle-btn');if(flipToggle){flipToggle.textContent=`Auto-Flip: ${autoFlipActive?'ON':'OFF'}`;flipToggle.addEventListener('click',()=>{autoFlipActive=!autoFlipActive;flipToggle.textContent=`Auto-Flip: ${autoFlipActive?'ON':'OFF'}`})}if(!reducedMotion)setInterval(()=>{if(!autoFlipActive)return;const cards=[...document.querySelectorAll('.perspective-1000')];if(cards.length)flipCard(cards[Math.floor(Math.random()*cards.length)])},3500);
+function calculateROI(){const calls=Number(document.getElementById('calls-slider')?.value||250);document.getElementById('calls-val').textContent=calls;const recovered=Math.round(calls*.25);document.getElementById('recovered-val').textContent=`${recovered} /mo`;document.getElementById('revenue-val').textContent=`$${(recovered*400).toLocaleString()}`;}document.getElementById('calls-slider')?.addEventListener('input',calculateROI);calculateROI();
+function openElena(){window.parent.postMessage({type:'apex:open-elena'},window.location.origin)}document.querySelectorAll('[data-open-elena]').forEach(b=>b.addEventListener('click',openElena));
+const modal=document.getElementById('legal-modal');document.querySelectorAll('[data-legal]').forEach(b=>b.addEventListener('click',()=>{modal.hidden=false;document.getElementById('legal-title').textContent=b.textContent+' note';document.getElementById('legal-copy').textContent='Elena processes the details you enter to coordinate your visit. Booking details are sent to Cal.com when you confirm an appointment. Cal.com handles booking emails. This page does not represent a certification, security guarantee, or verified customer endorsement.'}));document.querySelector('[data-close-legal]')?.addEventListener('click',()=>modal.hidden=true);modal?.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+</script></body></html>
