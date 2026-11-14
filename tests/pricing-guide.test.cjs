@@ -5,55 +5,73 @@ const path = require('node:path');
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 const page = read('app/page.tsx');
 const layout = read('app/layout.tsx');
-const hero = read('app/components/ApexZipHero.tsx');
-const heroCss = read('app/components/ApexZipHero.module.css');
-const canvas = read('app/components/ApexPhotoCanvas.tsx');
-const globalCss = read('app/globals.css');
+const hero = read('app/zip-template/components/Hero.tsx');
+const heroCss = read('app/zip-template/components/Hero.module.css');
+const nav = read('app/zip-template/components/Nav.tsx');
+const navCss = read('app/zip-template/components/Nav.module.css');
+const canvas = read('app/zip-template/components/LogCanvas.tsx');
+const cursor = read('app/zip-template/components/Cursor.tsx');
+const loader = read('app/zip-template/lib/loadImages.ts');
+const tokens = read('app/zip-template/styles/tokens.css');
+const zipGlobalCss = read('app/zip-template/styles/global.css');
 
-test('the Apex home page is the complete ZIP-inspired HVAC screen, not the old multisection page', () => {
-  assert.match(page, /<ApexZipHero onRequestQuote=\{requestSurvey\}/);
-  assert.match(page, /<Concierge open=\{chatOpen\}/);
-  assert.doesNotMatch(page, /DeferredComfortScene|ExperienceMotion|ComfortSystemsCarousel|HVACStory|comfort-intro|comfort-finale|experience-footer|service-gallery|comfort-metrics-section/);
-  assert.doesNotMatch(page, /<section|<footer/);
-  assert.match(hero, /Every zone/);
-  assert.match(hero, /tells a story\./);
-  assert.doesNotMatch(hero, /#services|#hvac-story|#approach|#finale/);
+ test('Apex displays the original ZIP page rather than the prior HVAC adaptation or legacy sections', () => {
+  assert.match(page, /import \{ Hero \} from '\.\/zip-template\/components\/Hero'/);
+  assert.match(page, /<Hero \/>/);
+  assert.match(page, /<Cursor \/>/);
+  assert.doesNotMatch(page, /ApexZipHero|DeferredComfortScene|ExperienceMotion|ComfortSystemsCarousel|HVACStory|comfort-intro|comfort-finale|experience-footer|service-gallery|comfort-metrics-section/);
+  assert.match(hero, /Every zone tells a story\./);
+  assert.match(hero, /Turn static thermostat data, legacy duct logs, and silent climate shifts into actionable telemetry\./);
+  assert.match(hero, /APEX AI transforms historical thermal data into structured dispatch decisions — without losing the story behind it\./);
+  assert.match(hero, /Deploy dispatch/);
+  assert.match(nav, /Systems[\s\S]*Platform[\s\S]*Dispatch[\s\S]*Telemetry[\s\S]*Integrations[\s\S]*Journal[\s\S]*Contact/);
+  assert.match(nav, /https:\/\/assets\.uberdesigner\.ai\/easylog\/logo\.svg/);
 });
 
-test('HVAC navigation and hero actions enter Elena while preserving the original intake and API routes', () => {
-  assert.match(hero, /\['Cooling', 'Air conditioning repair'\]/);
-  assert.match(hero, /\['Heating', 'Heating & furnace care'\]/);
-  assert.match(hero, /\['Maintenance', 'Seasonal maintenance'\]/);
-  assert.match(hero, /\['Air quality', 'Indoor air quality'\]/);
-  assert.match(hero, /onClick=\{\(\) => requestQuote\(service\)\}/);
-  assert.match(hero, /onClick=\{\(\) => requestQuote\('HVAC assessment and quote'\)\}/);
-  assert.match(page, /Quote request — \$\{quoteService\}\. Customer reports:/);
-  assert.match(page, /intakeFields: IntakeStep\[\] = \['name', 'phone', 'email', 'address', 'problem'\]/);
-  assert.match(page, /fetch\('\/api\/book'/);
-  assert.match(page, /fetch\('\/api\/concierge'/);
+test('original ZIP bare/moss artwork and image-loading path are preserved', () => {
+  assert.match(hero, /fetchImageWithProgress\('https:\/\/assets\.uberdesigner\.ai\/easylog\/log-bare\.webp'/);
+  assert.match(hero, /fetchImageWithProgress\('https:\/\/assets\.uberdesigner\.ai\/easylog\/log-moss\.webp'/);
+  assert.match(canvas, /targetCtx\.drawImage\(bareImg/);
+  assert.match(canvas, /targetCtx\.drawImage\(mossImg/);
+  assert.match(loader, /const response = await fetch\(url\)/);
+  assert.match(layout, /log-bare\.webp/);
+  assert.match(layout, /log-moss\.webp/);
 });
 
-test('Apex hero and preload use the same fast responsive HVAC image variants', () => {
-  const imageSet = hero.match(/const photoSrcSet = '([^']+)'/)[1];
-  const preloadSet = layout.match(/imageSrcSet="([^"]+)"/)[1];
-  assert.equal(imageSet, preloadSet);
-  assert.match(hero, /sizes="\(max-width: 1023px\) 88vw, 42vw"/);
-  assert.match(layout, /imageSizes="\(max-width: 1023px\) 88vw, 42vw"/);
-  assert.doesNotMatch(hero + layout, /apex-hvac-hero-4k\.jpeg/);
-  for (const width of [768, 1200]) {
-    const asset = path.join(__dirname, `../public/apex-hvac-outdoor-${width}.webp`);
-    assert.ok(fs.statSync(asset).size < 100000);
-  }
-  assert.match(hero, /fetchPriority="high"/);
-  assert.match(hero, /HVAC technician inspecting an outdoor air conditioning unit/);
-});
-
-test('the ZIP-style intro and image reveal stay animated and honor reduced-motion preferences', () => {
+test('original ZIP layout and motion modules are used without changing their viewport design', () => {
   assert.match(heroCss, /height: 100svh/);
-  assert.match(heroCss, /@keyframes photoBreathe/);
-  assert.match(heroCss, /prefers-reduced-motion: reduce/);
-  assert.match(hero, /timeline\.to\(progress/);
+  assert.match(heroCss, /--sky-0/);
+  assert.match(heroCss, /font-size: calc\(184 \* var\(--u\)\)/);
+  assert.match(heroCss, /@media \(max-width: 1023px\)/);
+  assert.match(navCss, /height: calc\(50 \* var\(--u\)\)/);
+  assert.match(hero, /zoom: 2\.6, pixel: 64/);
+  assert.match(hero, /gsap\.timeline\(\)/);
+  assert.match(canvas, /requestAnimationFrame\(render\)/);
   assert.match(canvas, /createRadialGradient/);
-  assert.match(canvas, /requestAnimationFrame/);
-  assert.match(globalCss, /font-family: 'Instrument Sans'/);
+  assert.match(canvas, /window\.addEventListener\('mousemove', onMouseMove\)/);
+  assert.match(cursor, /requestAnimationFrame\(loop\)/);
+  assert.match(tokens, /--sky-0: #0B1926/);
+  assert.match(tokens, /--lime: #D0F24B/);
+  assert.match(zipGlobalCss, /font-family: 'Instrument Sans'/);
+});
+
+test('Contact and Deploy dispatch open Elena, with no added launcher and the booking APIs intact', () => {
+  assert.match(page, /label !== 'Contact' && label !== 'Deploy dispatch'/);
+  assert.match(page, /setQuoteService\('HVAC service visit'\)/);
+  assert.match(page, /setChatOpen\(true\)/);
+  assert.match(page, /showLauncher=\{false\}/);
+  assert.match(page, /showLauncher && !open/);
+  assert.match(page, /const intakeFields: IntakeStep\[\] = \['name', 'phone', 'email', 'address', 'problem'\]/);
+  assert.match(page, /fetch\('\/api\/concierge'/);
+  assert.match(page, /fetch\(`\/api\/slots\?/);
+  assert.match(page, /fetch\('\/api\/book'/);
+});
+
+test('ZIP global styles, fonts, title and original remote-image preloads are loaded by Next', () => {
+  assert.match(layout, /import '\.\/zip-template\/styles\/tokens\.css'/);
+  assert.match(layout, /import '\.\/zip-template\/styles\/global\.css'/);
+  assert.match(layout, /Apex AI Dispatch — Every thermal zone tells a story\./);
+  assert.match(layout, /https:\/\/fonts\.googleapis\.com\/css2\?family=Instrument\+Sans/);
+  assert.match(layout, /preconnect/);
+  assert.doesNotMatch(layout, /apex-hvac-outdoor/);
 });

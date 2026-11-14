@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
   BadgeCheck,
@@ -11,7 +11,8 @@ import {
   Snowflake,
   X,
 } from 'lucide-react';
-import ApexZipHero from './components/ApexZipHero';
+import { Hero } from './zip-template/components/Hero';
+import { Cursor } from './zip-template/components/Cursor';
 
 type Role = 'assistant' | 'user';
 type ChatMessage = { role: Role; text: string };
@@ -48,7 +49,7 @@ function formatSlotDay(value: string, timeZone: string) {
   return new Intl.DateTimeFormat('en', { weekday: 'short', month: 'short', day: 'numeric', timeZone }).format(new Date(Date.UTC(year, month - 1, day, 12)));
 }
 
-function Concierge({ open, setOpen, quoteService }: { open: boolean; setOpen: (next: boolean) => void; quoteService: string | null }) {
+function Concierge({ open, setOpen, quoteService, showLauncher = true }: { open: boolean; setOpen: (next: boolean) => void; quoteService: string | null; showLauncher?: boolean }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', text: 'Hi, I’m Elena, Apex AI’s visit coordinator. Let’s start with your home and what you need. What name would you like me to use?' },
   ]);
@@ -157,7 +158,7 @@ function Concierge({ open, setOpen, quoteService }: { open: boolean; setOpen: (n
   };
 
   return <>
-    {!open && <button type="button" className="chat-launcher" onClick={() => setOpen(true)} aria-label="Open chat" title="Open chat">
+    {showLauncher && !open && <button type="button" className="chat-launcher" onClick={() => setOpen(true)} aria-label="Open chat" title="Open chat">
       <MessageCircle size={25} strokeWidth={1.7} aria-hidden="true" />
     </button>}
     {open && <aside className="chat-drawer" aria-label="Elena concierge chat">
@@ -198,14 +199,28 @@ function Concierge({ open, setOpen, quoteService }: { open: boolean; setOpen: (n
 }
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const heroRoot = useRef<HTMLDivElement>(null);
   const [chatOpen, setChatOpen] = useState(false);
-  const [light, setLight] = useState(false);
   const [quoteService, setQuoteService] = useState<string | null>(null);
-  const requestSurvey = (service?: string) => { setQuoteService(service ?? null); setChatOpen(true); setMenuOpen(false); };
+  useEffect(() => {
+    const root = heroRoot.current;
+    if (!root) return;
+    const openChatFromZip = (event: MouseEvent) => {
+      if (!(event.target instanceof Element)) return;
+      const link = event.target.closest('a');
+      const label = link?.textContent?.trim();
+      if (label !== 'Contact' && label !== 'Deploy dispatch') return;
+      event.preventDefault();
+      setQuoteService('HVAC service visit');
+      setChatOpen(true);
+    };
+    root.addEventListener('click', openChatFromZip);
+    return () => root.removeEventListener('click', openChatFromZip);
+  }, []);
 
-  return <main className="apex-page" id="top">
-    <ApexZipHero onRequestQuote={requestSurvey} light={light} onToggleTheme={() => setLight((value) => !value)} menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((value) => !value)} onCloseMenu={() => setMenuOpen(false)} />
-    <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} />
-  </main>;
+  return <>
+    <div ref={heroRoot}><Hero /></div>
+    <Cursor />
+    <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} showLauncher={false} />
+  </>;
 }

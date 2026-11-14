@@ -1,0 +1,29 @@
+:root {
+  --u: min(100vw / 1440, 100svh / 760);
+  
+  --sky-0: #0B1926;
+  --sky-1: #102436;
+  --sky-2: #16324B;
+  --sky-3: #1D4366;
+  --sky-4: #071017;
+  
+  --white: #FFFFFF;
+  --lime: #D0F24B;
+  --ink: #102436;
+  --black: #000000;
+  
+  --glass-fill: rgba(255, 255, 255, 0.06);
+  --glass-fill-strong: rgba(255, 255, 255, 0.15);
+  --cursor: rgba(208, 242, 75, 0.4);
+
+  --body-size: 20px;
+  --body-leading: 22px;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --u: min(100vw / 415, 100svh / 760);
+    --body-size: 16px;
+    --body-leading: 20px;
+  }
+}

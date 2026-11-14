@@ -1,0 +1,15 @@
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  background: var(--cursor);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 200ms linear;
+  will-change: transform;
+}

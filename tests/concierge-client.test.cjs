@@ -29,6 +29,7 @@ function createClient(initialOpen = true) {
     if (request === 'react/jsx-runtime') return { jsx, jsxs: jsx, Fragment: 'fragment' };
     if (request === 'lucide-react') return new Proxy({}, { get: (_, name) => name });
     if (request.startsWith('./components/')) return { default: () => null };
+    if (request.startsWith('./zip-template/components/')) return { Hero: () => null, Cursor: () => null };
     return original.call(this, request, parent, main);
   };
   let component;
