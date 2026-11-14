@@ -2,29 +2,15 @@
 
 import { useMemo, useState } from 'react';
 import {
-  ArrowDownRight,
   ArrowRight,
-  ArrowUpRight,
   BadgeCheck,
   CalendarDays,
-  Check,
-  ChevronRight,
   Clock3,
-  MapPin,
-  Menu,
   MessageCircle,
   Send,
-  ShieldCheck,
-  Sun,
-  Moon,
   Snowflake,
-  Wrench,
   X,
 } from 'lucide-react';
-import DeferredComfortScene from './components/DeferredComfortScene';
-import ExperienceMotion from './components/ExperienceMotion';
-import ComfortSystemsCarousel from './components/ComfortSystemsCarousel';
-import HVACStory from './components/HVACStory';
 import ApexZipHero from './components/ApexZipHero';
 
 type Role = 'assistant' | 'user';
@@ -211,53 +197,15 @@ function Concierge({ open, setOpen, quoteService }: { open: boolean; setOpen: (n
   </>;
 }
 
-const services = [
-  ['Cooling, restored.', 'Air conditioning repair', 'Uneven temperatures, warm air or an unfamiliar sound? Start with a clear diagnosis, not a guess.', '/apex-hvac-outdoor-service.jpeg'],
-  ['Warmth, without worry.', 'Heating & furnace care', 'Talk through cold rooms, heating interruptions and the next step toward a comfortable home.', '/hvac-detail.jpg'],
-  ['A smarter kind of comfort.', 'Heat pump systems', 'Explore heating and cooling in one system, with a plan suited to your home and climate.', '/hvac-heatpump.jpg'],
-  ['Small system. Big difference.', 'Ductless mini-splits', 'Discuss targeted comfort for a new room, a home office or a space your existing system misses.', '/hvac-detail.jpg'],
-  ['Keep the good air flowing.', 'Seasonal maintenance', 'Give your equipment attention before the weather changes. Ask about checks, cleaning and upkeep.', '/apex-ai-technicians.jpg'],
-  ['Fresh thinking, indoors.', 'Indoor air quality', 'Bring your questions about filtration, ventilation and the air moving through your home.', '/hvac-heatpump.jpg'],
-  ['Every room belongs.', 'Airflow & ductwork', 'Explore why one room feels different, and what an on-site airflow assessment can reveal.', '/hvac-service.webp'],
-  ['Comfort at your fingertips.', 'Thermostat & controls', 'Make sense of schedules, settings and controls so your system works around your day.', '/hvac-detail.jpg'],
-  ['A better next chapter.', 'System replacement', 'Compare options after an assessment of your existing equipment, space and comfort priorities.', '/hvac-heatpump.jpg'],
-  ['Find the reason first.', 'System diagnostics', 'Describe leaks, strange noises, cycling or reduced performance. Let the visit start with context.', '/apex-ai-technicians.jpg'],
-  ['Built around your home.', 'Installation planning', 'Discuss equipment placement, access, timing and the practical details before work begins.', '/hvac-service.webp'],
-  ['Ready for what’s next.', 'Year-round comfort', 'Make a practical plan for the seasons ahead, from everyday upkeep to future improvements.', '/hvac-heatpump.jpg'],
-];
-
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [light, setLight] = useState(false);
-  const [activeService, setActiveService] = useState<number | null>(null);
   const [quoteService, setQuoteService] = useState<string | null>(null);
   const requestSurvey = (service?: string) => { setQuoteService(service ?? null); setChatOpen(true); setMenuOpen(false); };
 
-  return <main className={`experience ${light ? 'theme-light' : ''}`} id="top">
-    <DeferredComfortScene />
+  return <main className="apex-page" id="top">
     <ApexZipHero onRequestQuote={requestSurvey} light={light} onToggleTheme={() => setLight((value) => !value)} menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((value) => !value)} onCloseMenu={() => setMenuOpen(false)} />
-
-    <section className="comfort-intro" id="approach"><span className="eyebrow">01 / THE APEX APPROACH</span><div><h2>Your home has a rhythm.<br /><i>We help you find it.</i></h2><p>Not just equipment. The room that never cools down. The first cold morning. The air your family breathes. Tell us what you notice — we’ll help make the next step clear.</p></div><span className="intro-index">A / AI</span></section>
-
-    <HVACStory onRequestQuote={requestSurvey} />
-
-    <ComfortSystemsCarousel onPlanVisit={requestSurvey} />
-
-    <section className="expertise" id="services" aria-labelledby="expertise-title">
-      <div className="expertise-heading"><div><span className="eyebrow">03 / A WHOLE WORLD OF HOME COMFORT</span><h2 id="expertise-title">Good air.<br /><i>Better living.</i></h2></div><p>Twelve ways to start a better conversation about your home. Explore a service, then tell Elena what you need.</p></div>
-      <div className="service-gallery">{services.map(([headline, title, summary, image], index) => <article className={`comfort-card ${activeService === index ? 'active' : ''}`} key={title} onMouseEnter={() => { setActiveService(index); window.dispatchEvent(new CustomEvent('apex-service-hover', { detail: index })); }} onMouseLeave={() => { setActiveService(null); window.dispatchEvent(new CustomEvent('apex-service-hover', { detail: -1 })); }}>
-        <button className="service-image" onClick={() => requestSurvey()} onFocus={() => setActiveService(index)} onBlur={() => setActiveService(null)} aria-label={`Ask Elena about ${title}`}><img src={image} alt={title === 'Heat pump systems' || index === 11 ? 'Residential heat pump beside a modern home' : 'HVAC service equipment and professional maintenance'} loading="lazy" width={800} height={520} /><span className="image-number">{String(index + 1).padStart(2, '0')} / APEX</span><span className="service-open"><ArrowUpRight size={22} /></span><span className="hover-headline">{headline}</span></button>
-        <div className="service-caption"><h3>{title}</h3><p>{summary}</p></div>
-      </article>)}</div>
-      <p className="expertise-note"><ShieldCheck size={15} /> Service availability, equipment suitability and recommendations depend on an on-site assessment. Images illustrate service categories, not completed Apex AI projects.</p>
-    </section>
-
-    <section className="visit-story"><span className="eyebrow">04 / PEOPLE BEFORE EQUIPMENT</span><h2>Less uncertainty.<br /><i>More understanding.</i></h2><div className="visit-steps"><article><span>01 — LISTEN</span><h3>Start with your story.</h3><p>Tell Elena your name, contact details, property address and what you’re noticing. One clear question at a time.</p></article><article><span>02 — ARRANGE</span><h3>A time that works.</h3><p>Choose from live available visit times, review your details and confirm when you’re ready.</p></article><article><span>03 — UNDERSTAND</span><h3>Know what comes next.</h3><p>A professional can assess your home and explain the options. Cal.com handles your booking confirmation.</p></article></div><button className="visit-cta" onClick={() => requestSurvey()}>Start with a conversation <ArrowUpRight size={17} /></button></section>
-
-    <section className="comfort-finale" id="finale"><div className="blinds" aria-hidden="true">{Array.from({ length: 12 }, (_, i) => <i key={i} style={{ '--blind': i } as React.CSSProperties} />)}</div><div className="finale-content"><span className="eyebrow">YOUR NEXT SEASON STARTS HERE</span><h2 className="split-headline" data-text="Comfort. Reimagined.">Comfort.<br /><i>Reimagined.</i></h2><p>Let’s make home feel like home again.</p><button className="finale-button" onClick={() => requestSurvey()}>Talk to Elena <ArrowUpRight size={24} /></button><span className="finale-small">A REAL CONVERSATION. A CLEARER NEXT STEP.</span></div></section>
-    <footer className="experience-footer"><a className="brand" href="#top"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a><span>HOME COMFORT, CONSIDERED.</span><a href="#top">BACK TO TOP <ArrowUpRight size={14} /></a></footer>
-    <ExperienceMotion />
     <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} />
   </main>;
 }

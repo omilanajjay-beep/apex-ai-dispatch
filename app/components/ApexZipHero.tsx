@@ -20,10 +20,10 @@ type MotionState = { zoom: number; pixel: number };
 
 const photoSrcSet = '/apex-hvac-outdoor-768.webp 768w, /apex-hvac-outdoor-1200.webp 1200w';
 const navLinks = [
-  ['Our expertise', '#services'],
-  ['Comfort in motion', '#hvac-story'],
-  ['The Apex approach', '#approach'],
-  ['Let’s talk', '#finale'],
+  ['Cooling', 'Air conditioning repair'],
+  ['Heating', 'Heating & furnace care'],
+  ['Maintenance', 'Seasonal maintenance'],
+  ['Air quality', 'Indoor air quality'],
 ] as const;
 
 export default function ApexZipHero({ onRequestQuote, light, onToggleTheme, menuOpen, onToggleMenu, onCloseMenu }: Props) {
@@ -125,7 +125,7 @@ export default function ApexZipHero({ onRequestQuote, light, onToggleTheme, menu
           <span className={styles.brandName}>APEX<small>AI</small></span>
         </a>
         <div className={`${styles.links} ${menuOpen ? styles.open : ''}`} id="apex-primary-links">
-          {navLinks.map(([label, href]) => <a key={href} href={href} onClick={onCloseMenu}>{label}</a>)}
+          {navLinks.map(([label, service]) => <button key={service} type="button" onClick={() => requestQuote(service)}>{label}</button>)}
         </div>
         <div className={styles.navActions}>
           <button className={styles.themeToggle} type="button" onClick={onToggleTheme} aria-label={light ? 'Switch to dark theme' : 'Switch to light theme'} title={light ? 'Switch to dark theme' : 'Switch to light theme'}>
@@ -173,10 +173,10 @@ export default function ApexZipHero({ onRequestQuote, light, onToggleTheme, menu
       </div>
 
       <div ref={bottomBarRef} className={styles.bottomBar}>
-        <a href="#approach" className={styles.scrollLink}>
+        <button type="button" className={styles.scrollLink} onClick={() => requestQuote('HVAC assessment and quote')}>
           <span className={styles.arrowCircle}><ArrowDown size={15} aria-hidden="true" /></span>
-          <span>Scroll to find your balance</span>
-        </a>
+          <span>Start with what your home is noticing</span>
+        </button>
         <span className={styles.bottomRight}>HEATING / COOLING / HOME COMFORT</span>
       </div>
     </section>
