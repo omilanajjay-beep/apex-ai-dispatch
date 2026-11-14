@@ -1,0 +1,21 @@
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 45;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(240, 222, 168, 0.22);
+  border-radius: 50%;
+  background: rgba(214, 184, 121, 0.13);
+  box-shadow: 0 0 26px rgba(214, 184, 121, 0.12);
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms linear;
+  will-change: transform;
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cursor { display: none; }
+}

@@ -7,6 +7,7 @@ const component = read('app/components/HVACStory.tsx');
 const page = read('app/page.tsx');
 const layout = read('app/layout.tsx');
 const styles = read('app/experience.css');
+const hero = read('app/components/ApexZipHero.tsx');
 
 test('HVAC story replaces the regional pricing UI and navigation', () => {
   assert.match(page, /HVACStory onRequestQuote=\{requestSurvey\}/);
@@ -25,18 +26,19 @@ test('story quote CTA retains concierge context and the original intake order', 
   assert.match(page, /fetch\('\/api\/concierge'/);
 });
 
-test('hero and preload use exactly matching responsive WebP candidates', () => {
-  const imageSet = page.match(/srcSet="([^"]+)"/)[1];
+test('Apex HVAC hero and preload use matching responsive WebP candidates', () => {
+  const imageSet = hero.match(/const photoSrcSet = '([^']+)'/)[1];
   const preloadSet = layout.match(/imageSrcSet="([^"]+)"/)[1];
   assert.equal(imageSet, preloadSet);
-  assert.match(page, /sizes="100vw"/);
-  assert.match(layout, /imageSizes="100vw"/);
-  assert.doesNotMatch(page + layout, /apex-hvac-hero-4k\.jpeg/);
-  for (const width of [768, 1280, 1920, 2560]) {
-    const asset = path.join(__dirname, `../public/apex-hvac-hero-${width}.webp`);
-    assert.ok(fs.statSync(asset).size < 550000);
+  assert.match(hero, /sizes="\(max-width: 1023px\) 88vw, 42vw"/);
+  assert.match(layout, /imageSizes="\(max-width: 1023px\) 88vw, 42vw"/);
+  assert.doesNotMatch(hero + layout, /apex-hvac-hero-4k\.jpeg/);
+  for (const width of [768, 1200]) {
+    const asset = path.join(__dirname, `../public/apex-hvac-outdoor-${width}.webp`);
+    assert.ok(fs.statSync(asset).size < 100000);
   }
-  assert.ok(fs.statSync(path.join(__dirname, '../public/apex-hvac-hero-768.webp')).size < 80000);
+  assert.match(hero, /fetchPriority="high"/);
+  assert.match(hero, /HVAC technician inspecting an outdoor air conditioning unit/);
 });
 
 test('cinematic motion remains enabled and decorative Three.js is deferred', () => {

@@ -25,7 +25,7 @@ import DeferredComfortScene from './components/DeferredComfortScene';
 import ExperienceMotion from './components/ExperienceMotion';
 import ComfortSystemsCarousel from './components/ComfortSystemsCarousel';
 import HVACStory from './components/HVACStory';
-import ApexHeroMotion from './components/ApexHeroMotion';
+import ApexZipHero from './components/ApexZipHero';
 
 type Role = 'assistant' | 'user';
 type ChatMessage = { role: Role; text: string };
@@ -236,38 +236,7 @@ export default function Home() {
 
   return <main className={`experience ${light ? 'theme-light' : ''}`} id="top">
     <DeferredComfortScene />
-    <nav className="experience-nav apex-nav" aria-label="Main navigation">
-      <a className="brand" href="#top" aria-label="Apex AI home"><span className="brand-symbol">A</span><span className="brand-name">APEX<small>AI</small></span></a>
-      <div id="primary-links" className={`experience-links ${menuOpen ? 'open' : ''}`}>
-        <a href="#services" onClick={() => setMenuOpen(false)}>Our expertise</a><a href="#hvac-story" onClick={() => setMenuOpen(false)}>Comfort in motion</a><a href="#approach" onClick={() => setMenuOpen(false)}>The Apex approach</a><a href="#finale" onClick={() => setMenuOpen(false)}>Let’s talk</a>
-      </div>
-      <div className="nav-tools"><button className="theme-toggle" onClick={() => setLight(!light)} aria-label={light ? 'Switch to dark theme' : 'Switch to light theme'}>{light ? <Moon size={17} /> : <Sun size={17} />}</button><button className="visit-cta" onClick={() => requestSurvey('HVAC assessment and quote')}>Request a quote <ArrowUpRight size={16} /></button><button className="menu-toggle" aria-expanded={menuOpen} aria-controls="primary-links" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}>{menuOpen ? <X size={21} /> : <Menu size={21} />}</button></div>
-    </nav>
-
-    <section className="comfort-hero apex-hero" aria-labelledby="comfort-title">
-      <div className="apex-first-screen">
-        <div className="apex-hero-copy">
-          <div className="apex-badge">01 / THE APEX APPROACH</div>
-          <h1 id="comfort-title"><span className="apex-word">Your </span><span className="apex-word">home </span><span className="apex-word">has </span><span className="apex-word">a </span><i className="apex-word">rhythm.</i></h1>
-          <p className="apex-lead">Heating. Cooling. Everything in balance.<br />Thoughtful HVAC care that starts with your home — and makes the next step clear.</p>
-          <div className="apex-hero-actions"><button className="apex-primary" onClick={() => requestSurvey('HVAC assessment and quote')}>Request a clear quote <ArrowUpRight size={18} /></button><a href="#hvac-story">Explore the comfort story <ArrowDownRight size={16} /></a></div>
-          <div className="apex-hero-note"><span />REAL HOMES. A MORE CONSIDERED KIND OF CARE.</div>
-        </div>
-        <div className="hero-photograph apex-photo"><img src="/apex-hvac-hero-1280.webp" srcSet="/apex-hvac-hero-768.webp 768w, /apex-hvac-hero-1280.webp 1280w, /apex-hvac-hero-1920.webp 1920w, /apex-hvac-hero-2560.webp 2560w" sizes="100vw" alt="HVAC technician diagnosing a heating and cooling system at a service bench" fetchPriority="high" decoding="async" width="4096" height="3072" /><div className="apex-photo-light" aria-hidden="true" /><div className="apex-rim-flash" aria-hidden="true" /></div>
-        <div className="apex-hero-footer"><a href="#apex-ready">SCROLL TO FIND YOUR BALANCE <ArrowDownRight size={16} /></a><span>HEATING / COOLING / HOME COMFORT</span></div>
-        <div className="apex-loader" aria-hidden="true"><span>APEX AI DISPATCH</span><strong data-apex-counter>0%</strong></div>
-      </div>
-      <div className="apex-ready" id="apex-ready">
-        <div className="apex-card-box"><div className="apex-card-float"><div className="apex-system-card">
-          <div className="apex-card-top"><span>APEX / COMFORT STUDY</span><Snowflake size={22} strokeWidth={1.2} /></div>
-          <div className="apex-card-reading"><span>RELATIVE HUMIDITY</span><strong>35<small>%</small></strong><div className="apex-card-scale"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div></div>
-          <div className="apex-card-bottom"><span>A home in balance.</span><small>ILLUSTRATIVE · NOT LIVE DATA</small></div>
-          <div className="apex-card-light" aria-hidden="true" />
-        </div></div></div>
-        <div className="apex-ready-copy"><span className="apex-badge" data-apex-ready-item>02 / A CLEARER NEXT STEP</span><h2 className="apex-ready-heading"><span className="apex-heading-one"><span className="apex-reveal-word">Everything</span>{' '}<span className="apex-reveal-word">considered.</span></span><br /><span className="apex-heading-two"><i><span className="apex-reveal-word">Before</span>{' '}<span className="apex-reveal-word">we</span>{' '}<span className="apex-reveal-word">arrive.</span></i></span></h2><p data-apex-ready-item>Tell Elena what you’re noticing. We’ll start with the right questions, then help you arrange an on-site assessment.</p><div className="apex-ready-details"><span className="apex-ready-wordmark" data-apex-ready-item>YOUR HOME, UNDERSTOOD.</span><span data-apex-ready-item>A conversation. A visit. A clearer plan.</span></div><button className="apex-primary" data-apex-ready-item onClick={() => requestSurvey('HVAC assessment and quote')}>Talk to Elena <ArrowUpRight size={18} /></button><p className="apex-card-disclaimer" data-apex-ready-item>The comfort study is illustrative, not a diagnosis. A professional assesses your actual system.</p></div>
-      </div>
-      <ApexHeroMotion />
-    </section>
+    <ApexZipHero onRequestQuote={requestSurvey} light={light} onToggleTheme={() => setLight((value) => !value)} menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((value) => !value)} onCloseMenu={() => setMenuOpen(false)} />
 
     <section className="comfort-intro" id="approach"><span className="eyebrow">01 / THE APEX APPROACH</span><div><h2>Your home has a rhythm.<br /><i>We help you find it.</i></h2><p>Not just equipment. The room that never cools down. The first cold morning. The air your family breathes. Tell us what you notice — we’ll help make the next step clear.</p></div><span className="intro-index">A / AI</span></section>
 
