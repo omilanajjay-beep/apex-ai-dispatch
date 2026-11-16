@@ -9,7 +9,7 @@ const visual = read('app/components/OutboxExperience.tsx');
 const css = read('app/components/OutboxExperience.module.css');
 
 test('Apex renders the supplied scroll-driven OUTBOX design directly in React', () => {
-  assert.match(page, /<OutboxExperience onTalk=\{openElena\} \/>/);
+  assert.match(page, /<OutboxExperience onTalk=\{openElena\} chatOpen=\{chatOpen\} \/>/);
   assert.doesNotMatch(page, /<iframe|addEventListener\('message'/);
   for (const text of ['Think outside', 'the box.', 'Elevating Brands.', 'Defining Futures.', 'Brand Identity', 'Digital Marketing', 'Web Experience', 'Featured Work', "LET'S TALK."]) assert.ok(visual.includes(text), text);
   assert.match(visual, /useScroll\(\{ target: containerRef/);
@@ -30,7 +30,7 @@ test('HVAC client relationship replacements are local optimized WebP photographs
     assert.equal(video.toString('ascii', 4, 8), 'ftyp');
     assert.ok(video.length < 1_000_000);
   }
-  assert.match(visual, /autoPlay loop muted playsInline/);
+  assert.match(visual, /autoPlay=\{playing\} loop muted playsInline/);
   assert.doesNotMatch(visual, /strvid\.nyc3|cloudinary/);
 });
 
@@ -69,4 +69,16 @@ test('specified palette, blend masks, responsive accordion, keyboard navigation 
   assert.match(visual, /event.key === 'Escape'/);
   assert.match(visual, /event.key === 'Tab'/);
   assert.match(css, /flex-direction:column;height:75vh/);
+});
+
+test('idle visual journey is optional, pauses for Elena, and keeps a readable manual control', () => {
+  assert.match(visual, /useIdleTour\(\{ enabled: reduce === false, paused: chatOpen \}\)/);
+  assert.match(visual, /data-idle-tour-control/);
+  assert.match(visual, /Pause automatic tour/);
+  assert.match(visual, /Resume automatic tour/);
+  assert.match(visual, /setActive\(current => \(current \+ 1\) % works.length\)/);
+  assert.match(visual, /document\.hidden/);
+  assert.match(visual, /video\.pause\(\)/);
+  assert.match(visual, /\.chat-drawer, #outbox-menu/);
+  assert.match(css, /prefers-reduced-motion:reduce\)\{\.tourControl\{display:none\}/);
 });

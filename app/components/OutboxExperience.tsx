@@ -1,9 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'framer-motion';
-import { ArrowDown, ArrowUpRight, Menu, Plus, X } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Menu, Pause, Play, Plus, X } from 'lucide-react';
+import useIdleTour from './useIdleTour';
 import styles from './OutboxExperience.module.css';
+
+const AutoplayContext = createContext(false);
+
+function useMotionPreference() {
+  const preference = useReducedMotion();
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  return hydrated ? preference : null;
+}
 
 const assets = {
   consultation: '/hvac-consultation.webp',
@@ -12,7 +22,23 @@ const assets = {
 };
 
 function Film({ scene = 'consultation', className = '' }: { scene?: keyof typeof assets; className?: string }) {
-  return <video className={`${styles.film} ${className}`} autoPlay loop muted playsInline preload="metadata" poster={assets[scene]} aria-hidden="true" tabIndex={-1}>
+  const ref = useRef<HTMLVideoElement>(null);
+  const playing = useContext(AutoplayContext);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    let visible = false;
+    const sync = () => {
+      if (playing && visible && !document.hidden) void video.play().catch(() => { /* The still poster remains available when autoplay is blocked. */ });
+      else video.pause();
+    };
+    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); });
+    observer.observe(video);
+    document.addEventListener('visibilitychange', sync);
+    sync();
+    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', sync); video.pause(); };
+  }, [playing]);
+  return <video ref={ref} className={`${styles.film} ${className}`} autoPlay={playing} loop muted playsInline preload="metadata" poster={assets[scene]} aria-hidden="true" tabIndex={-1}>
     <source src={`/hvac-${scene}-motion.mp4`} type="video/mp4" />
   </video>;
 }
@@ -64,7 +90,7 @@ function Navigation({ onTalk }: { onTalk: () => void }) {
 
 function Hero({ onTalk }: { onTalk: () => void }) {
   const containerRef = useRef<HTMLElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = useMotionPreference();
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end end'] });
   const scale = useTransform(scrollYProgress, [.75, 1], [1, .7]);
   const y = useTransform(scrollYProgress, [.75, 1], ['0vh', '-8vh']);
@@ -92,7 +118,7 @@ function Hero({ onTalk }: { onTalk: () => void }) {
         <div className={styles.circlePosition}><motion.div className={`${styles.circle} ${styles.thirdCircle}`} style={{ scale: thirdScale, opacity: circlesOpacity }} /></div>
         <div className={styles.circlePosition}><motion.div className={`${styles.circle} ${styles.fourthCircle}`} style={{ scale: fourthScale, opacity: circlesOpacity }} /></div>
         <motion.div className={styles.boxLetters} style={{ opacity: lettersOpacity }} aria-hidden="true"><span className={styles.letterB}>B</span><span className={styles.letterX}>X</span></motion.div>
-        <motion.div className={styles.heroCaption} style={{ opacity: hintOpacity }}><span>INDEPENDENT THINKING.<br />EXTRAORDINARY POSSIBILITIES.</span><span>SCROLL TO THINK<br />OUTSIDE THE BOX <ArrowDown size={16} /></span></motion.div>
+        <motion.div className={styles.heroCaption} style={{ opacity: hintOpacity }}><span>INDEPENDENT THINKING.<br />EXTRAORDINARY POSSIBILITIES.</span><span>AUTOMATIC JOURNEY<br />OR SCROLL TO EXPLORE <ArrowDown size={16} /></span></motion.div>
         <motion.div id="about" className={styles.heroContent} style={{ opacity: introOpacity, y: introY }}><span className={styles.eyebrow}>NO LIMITS. JUST POSSIBILITIES.</span><h1>Think outside<br />the box.</h1></motion.div>
       </>}
       <motion.div className={`${styles.heroContent} ${styles.finalContent}`} style={reduce ? undefined : { opacity: finalOpacity, y: finalY, visibility: finalVisibility }}>
@@ -137,7 +163,19 @@ const works = [
 
 function Work() {
   const [active, setActive] = useState(0);
-  return <section id="work" className={styles.work} aria-labelledby="work-title"><div className={styles.workHeading}><div><span className={styles.eyebrow}>02 / SELECTED PROJECTS</span><h2 id="work-title">Featured Work<span>.</span></h2></div><span className={styles.workNote}>DIFFERENT CHALLENGES.<br />ONE DISTINCT POINT OF VIEW.</span></div>
+  const ref = useRef<HTMLElement>(null);
+  const playing = useContext(AutoplayContext);
+  useEffect(() => {
+    if (!playing || !ref.current) return;
+    let visible = false;
+    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }, { threshold: .45 });
+    observer.observe(ref.current);
+    const timer = window.setInterval(() => {
+      if (visible && !document.hidden && !document.querySelector('.chat-drawer, #outbox-menu') && !ref.current?.contains(document.activeElement)) setActive(current => (current + 1) % works.length);
+    }, 4500);
+    return () => { observer.disconnect(); window.clearInterval(timer); };
+  }, [playing]);
+  return <section ref={ref} id="work" className={styles.work} aria-labelledby="work-title"><div className={styles.workHeading}><div><span className={styles.eyebrow}>02 / SELECTED PROJECTS</span><h2 id="work-title">Featured Work<span>.</span></h2></div><span className={styles.workNote}>DIFFERENT CHALLENGES.<br />ONE DISTINCT POINT OF VIEW.</span></div>
     <div className={styles.accordion}>{works.map((work, index) => <button key={work.title} className={`${styles.workItem} ${active === index ? styles.activeWork : ''}`} onMouseEnter={() => setActive(index)} onFocus={() => setActive(index)} onClick={() => setActive(index)} aria-expanded={active === index} aria-label={`${work.title} — ${work.category}`}>
       {/* Local, original HVAC images replace the supplied portfolio pictures. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -155,6 +193,10 @@ function Footer({ onTalk }: { onTalk: () => void }) {
   </footer>;
 }
 
-export default function OutboxExperience({ onTalk }: { onTalk: () => void }) {
-  return <div className={styles.experience}><a className={styles.skip} href="#services">Skip to content</a><div className={styles.grid} aria-hidden="true" /><Navigation onTalk={onTalk} /><main><Hero onTalk={onTalk} /><Services /><Work /></main><Footer onTalk={onTalk} /></div>;
+export default function OutboxExperience({ onTalk, chatOpen = false }: { onTalk: () => void; chatOpen?: boolean }) {
+  const reduce = useMotionPreference();
+  const tour = useIdleTour({ enabled: reduce === false, paused: chatOpen });
+  return <AutoplayContext.Provider value={tour.playing && !reduce && !chatOpen}><div className={styles.experience}><a className={styles.skip} href="#services">Skip to content</a><div className={styles.grid} aria-hidden="true" /><Navigation onTalk={onTalk} /><main><Hero onTalk={onTalk} /><Services /><Work /></main><Footer onTalk={onTalk} />
+    {reduce === false && <button type="button" data-idle-tour-control className={styles.tourControl} onClick={tour.toggle} aria-label={tour.playing ? 'Pause automatic tour' : 'Resume automatic tour'} aria-pressed={tour.playing}>{tour.playing ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}<span>{tour.playing ? 'Pause motion' : 'Play motion'}</span></button>}
+  </div></AutoplayContext.Provider>;
 }

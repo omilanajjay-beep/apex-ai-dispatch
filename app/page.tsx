@@ -206,7 +206,7 @@ export default function Home() {
     setChatOpen(true);
   };
   return <>
-    <OutboxExperience onTalk={openElena} />
+    <OutboxExperience onTalk={openElena} chatOpen={chatOpen} />
     <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} showLauncher={true} />
   </>;
 }
