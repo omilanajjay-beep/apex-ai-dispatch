@@ -64,13 +64,14 @@ const reply = (body, status = 200) => ({ ok: status < 400, status, async json() 
 
 test.afterEach(() => { delete global.fetch; });
 
-test('icon-only launcher has an accessible label and opens the existing chat', () => {
+test('visible Elena launcher has an accessible label and opens the existing chat', () => {
   const render = createClient(false);
   const launcher = byLabel(render(), 'Open chat');
   assert.ok(launcher);
   assert.equal(launcher.type, 'button');
-  assert.equal(launcher.props.children.type, 'MessageCircle');
-  assert.equal(launcher.props.children.props['aria-hidden'], 'true');
+  assert.ok(find(launcher, (node) => node.type === 'span' && node.props.children === 'Chat with Elena'));
+  assert.equal(find(launcher, (node) => node.type === 'MessageCircle').props['aria-hidden'], 'true');
+  assert.equal(launcher.props['aria-controls'], 'elena-chat');
   launcher.props.onClick();
   assert.ok(byLabel(render(), 'Elena concierge chat'));
   byLabel(render(), 'Close chat').props.onClick();

@@ -157,10 +157,11 @@ function Concierge({ open, setOpen, quoteService, showLauncher = true }: { open:
   };
 
   return <>
-    {showLauncher && !open && <button type="button" className="chat-launcher" onClick={() => setOpen(true)} aria-label="Open chat" title="Open chat">
+    {showLauncher && !open && <button type="button" className="chat-launcher" onClick={() => setOpen(true)} aria-label="Open chat" title="Chat with Elena" aria-expanded={false} aria-controls="elena-chat">
       <MessageCircle size={25} strokeWidth={1.7} aria-hidden="true" />
+      <span>Chat with Elena</span>
     </button>}
-    {open && <aside className="chat-drawer" aria-label="Elena concierge chat">
+    {open && <aside id="elena-chat" className="chat-drawer" aria-label="Elena concierge chat">
       <header className="chat-header">
         <div className="concierge-avatar" aria-hidden="true"><Snowflake size={18} /></div>
         <div className="chat-title"><span className="eyebrow">DISPATCH CONCIERGE</span><h2>Elena <span className="online-label"><i /> ready</span></h2></div>
