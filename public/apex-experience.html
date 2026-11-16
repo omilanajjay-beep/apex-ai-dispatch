@@ -78,8 +78,11 @@
   .hero-grid{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(360px,1.1fr);gap:clamp(2rem,6vw,6rem);align-items:center}
   .hero-copy{position:relative;z-index:3;min-width:0}
   .hero-copy h1{font-size:clamp(2.75rem,5.2vw,6rem);overflow-wrap:anywhere}
-  .hero-visual{position:relative;z-index:2;min-height:clamp(360px,56vw,650px);overflow:hidden;border-radius:2rem;border:1px solid rgba(255,255,255,.14);box-shadow:0 28px 90px rgba(0,240,255,.15)}
-  .hero-visual img{width:100%;height:100%;min-height:inherit;object-fit:cover;object-position:62% center;filter:saturate(1.08) contrast(1.03)}
+  .hero-visual{position:relative;z-index:2;min-height:clamp(360px,56vw,650px);overflow:hidden;border-radius:2rem;border:1px solid rgba(255,255,255,.14);box-shadow:0 28px 90px rgba(0,240,255,.15);animation:apex-frame-glow 5s ease-in-out infinite alternate}
+  .hero-visual img{width:100%;height:100%;min-height:inherit;object-fit:cover;object-position:62% center;filter:saturate(1.08) contrast(1.03);transform-origin:center;will-change:transform;animation:apex-client-drift 9s ease-in-out infinite alternate}
+  @keyframes apex-client-drift{from{transform:translate3d(0,0,0) scale(1.025)}to{transform:translate3d(-1%,-1%,0) scale(1.105)}}
+  @keyframes apex-frame-glow{from{box-shadow:0 24px 70px rgba(0,240,255,.13);border-color:rgba(255,255,255,.14)}to{box-shadow:0 30px 100px rgba(0,240,255,.29);border-color:rgba(0,240,255,.42)}}
+  @media (prefers-reduced-motion:reduce){.hero-visual,.hero-visual img{animation:none!important}.hero-visual img{transform:none;will-change:auto}}
   .hero-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,240,255,.12),transparent 42%,rgba(3,3,5,.18));pointer-events:none}
   .hero-visual figcaption{position:absolute;left:1rem;bottom:1rem;z-index:1;padding:.55rem .8rem;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(3,3,5,.62);backdrop-filter:blur(10px);font:500 .7rem/1.2 'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#d6faff}
   .legal-trigger{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer}
