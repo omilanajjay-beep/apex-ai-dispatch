@@ -71,14 +71,12 @@ test('specified palette, blend masks, responsive accordion, keyboard navigation 
   assert.match(css, /flex-direction:column;height:75vh/);
 });
 
-test('idle visual journey is optional, pauses for Elena, and keeps a readable manual control', () => {
+test('idle visual journey continues automatically without a pause control and pauses for Elena', () => {
   assert.match(visual, /useIdleTour\(\{ enabled: reduce === false, paused: chatOpen \}\)/);
-  assert.match(visual, /data-idle-tour-control/);
-  assert.match(visual, /Pause automatic tour/);
-  assert.match(visual, /Resume automatic tour/);
+  assert.doesNotMatch(visual, /Pause motion|Play motion|Pause automatic tour|Resume automatic tour|data-idle-tour-control/);
+  assert.doesNotMatch(css, /tourControl/);
   assert.match(visual, /setActive\(current => \(current \+ 1\) % works.length\)/);
   assert.match(visual, /document\.hidden/);
   assert.match(visual, /video\.pause\(\)/);
   assert.match(visual, /\.chat-drawer, #outbox-menu/);
-  assert.match(css, /prefers-reduced-motion:reduce\)\{\.tourControl\{display:none\}/);
 });

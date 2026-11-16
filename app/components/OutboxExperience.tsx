@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'framer-motion';
-import { ArrowDown, ArrowUpRight, Menu, Pause, Play, Plus, X } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Menu, Plus, X } from 'lucide-react';
 import useIdleTour from './useIdleTour';
 import styles from './OutboxExperience.module.css';
 
@@ -197,6 +197,5 @@ export default function OutboxExperience({ onTalk, chatOpen = false }: { onTalk:
   const reduce = useMotionPreference();
   const tour = useIdleTour({ enabled: reduce === false, paused: chatOpen });
   return <AutoplayContext.Provider value={tour.playing && !reduce && !chatOpen}><div className={styles.experience}><a className={styles.skip} href="#services">Skip to content</a><div className={styles.grid} aria-hidden="true" /><Navigation onTalk={onTalk} /><main><Hero onTalk={onTalk} /><Services /><Work /></main><Footer onTalk={onTalk} />
-    {reduce === false && <button type="button" data-idle-tour-control className={styles.tourControl} onClick={tour.toggle} aria-label={tour.playing ? 'Pause automatic tour' : 'Resume automatic tour'} aria-pressed={tour.playing}>{tour.playing ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}<span>{tour.playing ? 'Pause motion' : 'Play motion'}</span></button>}
   </div></AutoplayContext.Provider>;
 }
