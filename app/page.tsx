@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
+import OutboxExperience from './components/OutboxExperience';
 import {
   ArrowRight,
   BadgeCheck,
@@ -197,22 +198,14 @@ function Concierge({ open, setOpen, quoteService, showLauncher = true }: { open:
 }
 
 export default function Home() {
-  const experience = useRef<HTMLIFrameElement>(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [quoteService, setQuoteService] = useState<string | null>(null);
-  useEffect(() => {
-    const openChatFromExperience = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin || event.source !== experience.current?.contentWindow) return;
-      if (event.data?.type !== 'apex:open-elena') return;
-      setQuoteService('HVAC service visit');
-      setChatOpen(true);
-    };
-    window.addEventListener('message', openChatFromExperience);
-    return () => window.removeEventListener('message', openChatFromExperience);
-  }, []);
-
+  const openElena = () => {
+    setQuoteService('HVAC service visit');
+    setChatOpen(true);
+  };
   return <>
-    <iframe ref={experience} src="/apex-experience.html" title="Apex AI — Autonomous dispatch and seamless client flow" style={{ position: 'fixed', inset: 0, width: '100%', height: '100dvh', border: 0, background: '#030305' }} />
-    <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} showLauncher={false} />
+    <OutboxExperience onTalk={openElena} />
+    <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} showLauncher={true} />
   </>;
 }
