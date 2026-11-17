@@ -77,7 +77,7 @@ function Navigation({ onTalk }: { onTalk: () => void }) {
   const links = [['About', '#about'], ['Services', '#services'], ['Work', '#work'], ['Contact', '#contact']];
   return <>
     <nav className={`${styles.nav} ${scrolled ? styles.scrolled : ''}`} aria-label="Main navigation" style={open ? { visibility: 'hidden' } : undefined}>
-      <a href="#top" className={styles.logo} aria-label="OUTBOX — Apex AI home" onClick={() => setOpen(false)}>OUT<span>BOX</span><i /></a>
+      <a href="#top" className={styles.logo} aria-label="Apex AI home" onClick={() => setOpen(false)}>APEX<span> AI</span><i /></a>
       <div className={styles.desktopLinks}>{links.map(([label, href]) => <a key={label} href={href}>{label}</a>)}</div>
       <button ref={menuButton} id="outbox-menu-toggle" type="button" className={styles.menuToggle} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} aria-controls="outbox-menu" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
     </nav>
@@ -118,20 +118,20 @@ function Hero({ onTalk }: { onTalk: () => void }) {
         <div className={styles.circlePosition}><motion.div className={`${styles.circle} ${styles.thirdCircle}`} style={{ scale: thirdScale, opacity: circlesOpacity }} /></div>
         <div className={styles.circlePosition}><motion.div className={`${styles.circle} ${styles.fourthCircle}`} style={{ scale: fourthScale, opacity: circlesOpacity }} /></div>
         <motion.div className={styles.boxLetters} style={{ opacity: lettersOpacity }} aria-hidden="true"><span className={styles.letterB}>B</span><span className={styles.letterX}>X</span></motion.div>
-        <motion.div className={styles.heroCaption} style={{ opacity: hintOpacity }}><span>INDEPENDENT THINKING.<br />EXTRAORDINARY POSSIBILITIES.</span><span>AUTOMATIC JOURNEY<br />OR SCROLL TO EXPLORE <ArrowDown size={16} /></span></motion.div>
-        <motion.div id="about" className={styles.heroContent} style={{ opacity: introOpacity, y: introY }}><span className={styles.eyebrow}>NO LIMITS. JUST POSSIBILITIES.</span><h1>Think outside<br />the box.</h1></motion.div>
+        <motion.div className={styles.heroCaption} style={{ opacity: hintOpacity }}><span>HUMAN SERVICE.<br />EXTRAORDINARY HOME COMFORT.</span><span>AUTOMATIC JOURNEY<br />OR SCROLL TO EXPLORE <ArrowDown size={16} /></span></motion.div>
+        <motion.div id="about" className={styles.heroContent} style={{ opacity: introOpacity, y: introY }}><span className={styles.eyebrow}>YOUR HOME. YOUR COMFORT.</span><h1>Comfort outside<br />the box.</h1></motion.div>
       </>}
       <motion.div className={`${styles.heroContent} ${styles.finalContent}`} style={reduce ? undefined : { opacity: finalOpacity, y: finalY, visibility: finalVisibility }}>
-        <span className={styles.eyebrow}>BEYOND THE EXPECTED.</span><h2>Elevating Brands.<br />Defining Futures.</h2><TalkButton onTalk={onTalk} />
+        <span className={styles.eyebrow}>HOME COMFORT, CONNECTED.</span><h2>Elevating Comfort.<br />Defining Home.</h2><TalkButton onTalk={onTalk} />
       </motion.div>
     </motion.div>
   </section>;
 }
 
 const services = [
-  { title: 'Brand Identity', scene: 'consultation' as const, tags: ['STRATEGY', 'IDENTITY', 'DIRECTION'], description: 'Distinctive by design. Unmistakable by nature.' },
-  { title: 'Digital Marketing', scene: 'comfort' as const, tags: ['CONNECTION', 'CAMPAIGNS', 'GROWTH'], description: 'Meaningful connections. Measurable impact.' },
-  { title: 'Web Experience', scene: 'service' as const, tags: ['DESIGN', 'DEVELOPMENT', 'EXPERIENCE'], description: 'Digital experiences that move people forward.' },
+  { title: 'Heating & Cooling', scene: 'consultation' as const, tags: ['HEATING', 'COOLING', 'COMFORT'], description: 'A comfortable home starts with a system that works for you.' },
+  { title: 'Repair & Maintenance', scene: 'comfort' as const, tags: ['DIAGNOSTICS', 'REPAIR', 'MAINTENANCE'], description: 'Tell us what feels wrong. We’ll help arrange a clear next step.' },
+  { title: 'Your Comfort Plan', scene: 'service' as const, tags: ['CONSULTATION', 'REPLACEMENT', 'CARE'], description: 'Thoughtful advice. An on-site assessment. A plan for your home.' },
 ];
 
 function StackCard({ item, index, progress }: { item: typeof services[number]; index: number; progress: MotionValue<number> }) {
@@ -148,17 +148,17 @@ function Services() {
   const containerRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end end'] });
   return <section ref={containerRef} id="services" className={styles.services} aria-labelledby="services-title"><div className={styles.servicesSticky}>
-    <div className={styles.expertise}><span className={styles.eyebrow}>01 / WHAT WE DO</span><h2 id="services-title">Our Core<br />Expertise.</h2><p>We challenge convention.<br />We create what comes next.</p><span className={styles.expertiseNote}>A DIFFERENT PERSPECTIVE.<br />A LASTING IMPRESSION.</span></div>
+    <div className={styles.expertise}><span className={styles.eyebrow}>01 / WHAT WE DO</span><h2 id="services-title">Home Comfort.<br />Handled.</h2><p>Real people. Clear guidance.<br />Heating and cooling, connected.</p><span className={styles.expertiseNote}>A PERSONAL CONVERSATION.<br />A MORE COMFORTABLE HOME.</span></div>
     <div className={styles.cardWrapper}>{services.map((item, index) => <StackCard item={item} index={index} key={item.title} progress={scrollYProgress} />)}</div>
   </div></section>;
 }
 
 const works = [
-  { title: 'EcoNexa', category: 'BRAND STRATEGY / DIGITAL DESIGN', image: assets.consultation, position: '46% center' },
-  { title: 'Bali Travel', category: 'IDENTITY / EXPERIENCE', image: assets.service, position: '30% center' },
-  { title: 'Calm', category: 'ART DIRECTION / WEB EXPERIENCE', image: assets.comfort, position: '58% center' },
-  { title: 'Northridge', category: 'STRATEGY / BRAND IDENTITY', image: '/apex-hvac-outdoor-1200.webp', position: '52% center' },
-  { title: 'Naturally', category: 'DIGITAL DESIGN / DEVELOPMENT', image: '/apex-client-relationship.webp', position: '60% center' },
+  { title: 'A clearer conversation', category: 'TECHNICIAN / HOMEOWNER', image: assets.consultation, position: '46% center' },
+  { title: 'Care that comes home', category: 'SERVICE / CONNECTION', image: assets.service, position: '30% center' },
+  { title: 'Comfort, considered', category: 'CONSULTATION / HOME COMFORT', image: assets.comfort, position: '58% center' },
+  { title: 'Cooling with confidence', category: 'COOLING / SYSTEM CARE', image: '/apex-hvac-outdoor-1200.webp', position: '52% center' },
+  { title: 'People come first', category: 'HUMAN SERVICE / CLEAR GUIDANCE', image: '/apex-client-relationship.webp', position: '60% center' },
 ];
 
 function Work() {
@@ -175,11 +175,11 @@ function Work() {
     }, 4500);
     return () => { observer.disconnect(); window.clearInterval(timer); };
   }, [playing]);
-  return <section ref={ref} id="work" className={styles.work} aria-labelledby="work-title"><div className={styles.workHeading}><div><span className={styles.eyebrow}>02 / SELECTED PROJECTS</span><h2 id="work-title">Featured Work<span>.</span></h2></div><span className={styles.workNote}>DIFFERENT CHALLENGES.<br />ONE DISTINCT POINT OF VIEW.</span></div>
+  return <section ref={ref} id="work" className={styles.work} aria-labelledby="work-title"><div className={styles.workHeading}><div><span className={styles.eyebrow}>02 / THE COMFORT COLLECTION</span><h2 id="work-title">Real Connections<span>.</span></h2></div><span className={styles.workNote}>DIFFERENT HOMES.<br />ONE HUMAN APPROACH.</span></div>
     <div className={styles.accordion}>{works.map((work, index) => <button key={work.title} className={`${styles.workItem} ${active === index ? styles.activeWork : ''}`} onMouseEnter={() => setActive(index)} onFocus={() => setActive(index)} onClick={() => setActive(index)} aria-expanded={active === index} aria-label={`${work.title} — ${work.category}`}>
       {/* Local, original HVAC images replace the supplied portfolio pictures. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={work.image} alt={`HVAC technician and client — ${work.title} visual study`} style={{ objectPosition: work.position }} loading="lazy" />
+      <img src={work.image} alt={`HVAC technician and client — ${work.title} home comfort scene`} style={{ objectPosition: work.position }} loading="lazy" />
       <div className={styles.workShade} /><span className={styles.workIndex}>0{index + 1}</span><div className={styles.workText}><span>{work.category}</span><h3>{work.title}</h3></div><ArrowUpRight className={styles.workArrow} size={28} aria-hidden="true" />
     </button>)}</div>
   </section>;
@@ -187,9 +187,9 @@ function Work() {
 
 function Footer({ onTalk }: { onTalk: () => void }) {
   return <footer id="contact" className={styles.footer}>
-    <div className={styles.footerIntro}><span className={styles.eyebrow}>HAVE SOMETHING IN MIND?</span><span>GOOD THINGS START<br />WITH A CONVERSATION.</span></div>
+    <div className={styles.footerIntro}><span className={styles.eyebrow}>READY TO FEEL AT HOME?</span><span>GOOD THINGS START<br />WITH A CONVERSATION.</span></div>
     <button type="button" className={styles.maskButton} onClick={onTalk} aria-label="Let's talk — open Elena booking concierge"><div className={styles.videoMask}><Film /><span>LET'S TALK.</span></div><ArrowUpRight className={styles.footerArrow} aria-hidden="true" /></button>
-    <div className={styles.footerBottom}><a href="#top" className={styles.logo} aria-label="Back to top">OUT<span>BOX</span><i /></a><span>APEX AI © {new Date().getFullYear()}</span><div><a href="#about">About</a><a href="#services">Services</a><a href="#work">Work</a><button type="button" onClick={onTalk}>Let's Talk <Plus size={14} /></button></div><a href="#top" className={styles.backTop}>BACK TO TOP <ArrowUpRight size={16} /></a></div>
+    <div className={styles.footerBottom}><a href="#top" className={styles.logo} aria-label="Back to top">APEX<span> AI</span><i /></a><span>APEX AI © {new Date().getFullYear()}</span><div><a href="#about">About</a><a href="#services">Services</a><a href="#work">Work</a><button type="button" onClick={onTalk}>Let's Talk <Plus size={14} /></button></div><a href="#top" className={styles.backTop}>BACK TO TOP <ArrowUpRight size={16} /></a></div>
   </footer>;
 }
 

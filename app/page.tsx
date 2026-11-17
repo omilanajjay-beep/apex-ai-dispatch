@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import HvacRunway from './components/HvacRunway';
+import OutboxExperience from './components/OutboxExperience';
 import {
   ArrowRight,
   BadgeCheck,
@@ -201,12 +201,12 @@ function Concierge({ open, setOpen, quoteService, showLauncher = true }: { open:
 export default function Home() {
   const [chatOpen, setChatOpen] = useState(false);
   const [quoteService, setQuoteService] = useState<string | null>(null);
-  const openElena = (service: string) => {
-    setQuoteService(service);
+  const openElena = () => {
+    setQuoteService('HVAC service visit');
     setChatOpen(true);
   };
   return <>
-    <HvacRunway onBook={openElena} chatOpen={chatOpen} />
+    <OutboxExperience onTalk={openElena} chatOpen={chatOpen} />
     <Concierge open={chatOpen} setOpen={setChatOpen} quoteService={quoteService} showLauncher={true} />
   </>;
 }
