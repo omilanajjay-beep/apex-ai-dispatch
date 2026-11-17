@@ -10,6 +10,18 @@
       ]
     },
     {
+      "source": "/perf/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/fonts/inter-latin-variable-v1.woff2",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
       "source": "/apex-experience.html",
       "headers": [
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },

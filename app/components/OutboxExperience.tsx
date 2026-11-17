@@ -16,30 +16,40 @@ function useMotionPreference() {
 }
 
 const assets = {
-  consultation: '/hvac-consultation.webp',
-  comfort: '/hvac-home-comfort.webp',
-  service: '/hvac-service-visit.webp',
+  consultation: '/perf/hvac-consultation-1280-q80-v1.webp',
+  comfort: '/perf/hvac-home-comfort-1280-q80-v1.webp',
+  service: '/perf/hvac-service-visit-1280-q80-v1.webp',
 };
 
-function Film({ scene = 'consultation', className = '' }: { scene?: keyof typeof assets; className?: string }) {
+function Film({ scene = 'consultation', className = '', priority = false }: { scene?: keyof typeof assets; className?: string; priority?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const playing = useContext(AutoplayContext);
+  const [near, setNear] = useState(priority);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
-    let visible = false;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+    const preloadObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setNear(true); preloadObserver.disconnect(); }
+    }, { rootMargin: '200px' });
+    observer.observe(video);
+    preloadObserver.observe(video);
+    return () => { observer.disconnect(); preloadObserver.disconnect(); };
+  }, []);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
     const sync = () => {
-      if (playing && visible && !document.hidden) void video.play().catch(() => { /* The still poster remains available when autoplay is blocked. */ });
+      if (playing && near && visible && !document.hidden) void video.play().catch(() => { /* The still poster remains available when autoplay is blocked. */ });
       else video.pause();
     };
-    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); });
-    observer.observe(video);
     document.addEventListener('visibilitychange', sync);
     sync();
-    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', sync); video.pause(); };
-  }, [playing]);
-  return <video ref={ref} className={`${styles.film} ${className}`} autoPlay={playing} loop muted playsInline preload="metadata" poster={assets[scene]} aria-hidden="true" tabIndex={-1}>
-    <source src={`/hvac-${scene}-motion.mp4`} type="video/mp4" />
+    return () => { document.removeEventListener('visibilitychange', sync); video.pause(); };
+  }, [playing, near, visible]);
+  return <video ref={ref} className={`${styles.film} ${className}`} autoPlay={playing && near && visible} loop muted playsInline preload="none" poster={near ? assets[scene] : undefined} aria-hidden="true" tabIndex={-1}>
+    {near && <source src={`/hvac-${scene}-motion.mp4`} type="video/mp4" />}
   </video>;
 }
 
@@ -110,9 +120,9 @@ function Hero({ onTalk }: { onTalk: () => void }) {
   const hintOpacity = useTransform(scrollYProgress, [0, .06], [1, 0]);
   return <section ref={containerRef} id="top" className={`${styles.hero} ${reduce ? styles.reducedHero : ''}`} aria-label="Think outside the box">
     <motion.div className={styles.heroSticky} style={reduce ? undefined : { scale, y, borderRadius, opacity }}>
-      <Film className={styles.heroFilm} />
+      <Film className={styles.heroFilm} priority />
       <div className={styles.heroShade} />
-      <div className={styles.circlePosition}><motion.div className={`${styles.circle} ${styles.outerCircle}`} style={{ scale: reduce ? 3 : outerScale }}><Film scene="comfort" /></motion.div></div>
+      <div className={styles.circlePosition}><motion.div className={`${styles.circle} ${styles.outerCircle}`} style={{ scale: reduce ? 3 : outerScale }}><Film scene="comfort" priority /></motion.div></div>
       {!reduce && <>
         <div className={styles.circlePosition}><motion.div className={`${styles.circle} ${styles.secondCircle}`} style={{ scale: secondScale, opacity: circlesOpacity }} /></div>
         <div className={styles.circlePosition}><motion.div className={`${styles.circle} ${styles.thirdCircle}`} style={{ scale: thirdScale, opacity: circlesOpacity }} /></div>

@@ -31,9 +31,9 @@ test('Apex restores Outbox directly in React with the giant B/X hero and HVAC me
   assert.doesNotMatch(page, /<iframe|postMessage|addEventListener\('message'/);
 
   for (const asset of [
-    '/hvac-consultation.webp',
-    '/hvac-home-comfort.webp',
-    '/hvac-service-visit.webp',
+    '/perf/hvac-consultation-1280-q80-v1.webp',
+    '/perf/hvac-home-comfort-1280-q80-v1.webp',
+    '/perf/hvac-service-visit-1280-q80-v1.webp',
     '/apex-hvac-outdoor-1200.webp',
     '/apex-client-relationship.webp',
   ]) assert.match(visual, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
@@ -45,9 +45,11 @@ test('Apex restores Outbox directly in React with the giant B/X hero and HVAC me
 
 test('all restored HVAC posters and motion backgrounds are local optimized media', () => {
   for (const file of ['hvac-consultation.webp', 'hvac-home-comfort.webp', 'hvac-service-visit.webp']) assertWebp(file);
+  for (const file of ['perf/hvac-consultation-1280-q80-v1.webp', 'perf/hvac-home-comfort-1280-q80-v1.webp', 'perf/hvac-service-visit-1280-q80-v1.webp']) assertWebp(file, 150_000);
   for (const file of ['hvac-consultation-motion.mp4', 'hvac-comfort-motion.mp4', 'hvac-service-motion.mp4']) assertMp4(file);
-  assert.match(visual, /autoPlay=\{playing\} loop muted playsInline/);
-  assert.match(visual, /poster=\{assets\[scene\]\}/);
+  assert.match(visual, /autoPlay=\{playing && near && visible\} loop muted playsInline preload="none"/);
+  assert.match(visual, /\{near && <source src=\{`\/hvac-\$\{scene\}-motion\.mp4`\}/);
+  assert.match(visual, /poster=\{near \? assets\[scene\] : undefined\}/);
   assert.doesNotMatch(visual, /strvid\.nyc3|cloudinary/);
 });
 
@@ -99,6 +101,9 @@ test('automatic idle tour is preserved, pauses for Elena and exposes no motion c
 
 test('metadata and framing security configuration remain intact', () => {
   assert.match(layout, /Apex AI — Autonomous Dispatch & Seamless Client Flow/);
+  assert.doesNotMatch(layout, /fonts\.googleapis\.com/);
+  assert.match(css, /font-family:Inter;font-style:normal;font-weight:400 900;font-display:swap;src:url\('\/fonts\/inter-latin-variable-v1\.woff2'\)/);
+  assert.ok(fs.statSync(publicFile('fonts/inter-latin-variable-v1.woff2')).size < 60_000);
   const config = JSON.parse(read('vercel.json'));
   assert.ok(config.headers[0].headers.some(h => h.key === 'X-Frame-Options' && h.value === 'DENY'));
   const experience = config.headers.find(h => h.source === '/apex-experience.html');
