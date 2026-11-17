@@ -5,41 +5,38 @@ const path = require('node:path');
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 const page = read('app/page.tsx');
 const layout = read('app/layout.tsx');
-const visual = read('app/components/OutboxExperience.tsx');
-const css = read('app/components/OutboxExperience.module.css');
+const visual = read('app/components/HvacRunway.tsx');
+const css = read('app/components/HvacRunway.module.css');
 
-test('Apex renders the supplied scroll-driven OUTBOX design directly in React', () => {
-  assert.match(page, /<OutboxExperience onTalk=\{openElena\} chatOpen=\{chatOpen\} \/>/);
+test('Apex renders a six-stop HVAC Runway directly in React without commerce content', () => {
+  assert.match(page, /<HvacRunway onBook=\{openElena\} chatOpen=\{chatOpen\} \/>/);
   assert.doesNotMatch(page, /<iframe|addEventListener\('message'/);
-  for (const text of ['Think outside', 'the box.', 'Elevating Brands.', 'Defining Futures.', 'Brand Identity', 'Digital Marketing', 'Web Experience', 'Featured Work', "LET'S TALK."]) assert.ok(visual.includes(text), text);
-  assert.match(visual, /useScroll\(\{ target: containerRef/);
-  assert.match(visual, /useTransform/);
-  assert.match(css, /height:400vh/);
-  assert.match(css, /height:300vh;margin-top:-100vh/);
+  for (const text of ['AIR CONDITIONING', 'HEATING & FURNACES', 'SYSTEM REPLACEMENT', 'PREVENTIVE MAINTENANCE', 'DIAGNOSTICS & REPAIR', 'HOME COMFORT CONSULTATION']) assert.ok(visual.includes(text), text);
+  assert.doesNotMatch(visual, /Nike|shopping bag|Add to bag|Tshirt|Sweatshirt|Shopify/);
+  assert.match(visual, /Math\.cos\(theta\)/);
+  assert.match(visual, /Math\.sin\(theta\)/);
+  assert.match(visual, /requestAnimationFrame\(step\)/);
 });
 
-test('HVAC client relationship replacements are local optimized WebP photographs and playable MP4 backgrounds', () => {
-  for (const name of ['consultation', 'home-comfort', 'service-visit']) {
-    const photo = fs.readFileSync(path.join(__dirname, '..', 'public', `hvac-${name}.webp`));
-    assert.equal(photo.toString('ascii', 0, 4), 'RIFF');
-    assert.equal(photo.toString('ascii', 8, 12), 'WEBP');
-    assert.ok(photo.length < 500_000);
+test('all six supplied HVAC photos have local, optimized mobile, desktop and thumbnail variants', () => {
+  for (const name of ['client-outdoor-unit', 'comfort-consultation', 'home-consult', 'technician-homeowner', 'technician-repair', 'technician-service']) {
+    for (const size of [240,640,1000]) {
+      const photo = fs.readFileSync(path.join(__dirname, '..', 'public', 'hvac-runway', `${name}-${size}.webp`));
+      assert.equal(photo.toString('ascii', 0, 4), 'RIFF');
+      assert.equal(photo.toString('ascii', 8, 12), 'WEBP');
+      assert.ok(photo.length < (size === 640 ? 70000 : 150000));
+    }
   }
-  for (const name of ['consultation', 'comfort', 'service']) {
-    const video = fs.readFileSync(path.join(__dirname, '..', 'public', `hvac-${name}-motion.mp4`));
-    assert.equal(video.toString('ascii', 4, 8), 'ftyp');
-    assert.ok(video.length < 1_000_000);
-  }
-  assert.match(visual, /autoPlay=\{playing\} loop muted playsInline/);
-  assert.doesNotMatch(visual, /strvid\.nyc3|cloudinary/);
+  assert.match(visual, /<source media="\(max-width: 749px\)"/);
+  assert.match(visual, /fetchPriority=\{i === 0 \? 'high' : 'auto'\}/);
 });
 
-test('the in-tree visual invokes Elena through an explicit callback and retains the visible launcher', () => {
-  assert.match(page, /const openElena = \(\) =>/);
-  assert.match(page, /setQuoteService\('HVAC service visit'\)/);
+test('service CTAs invoke the existing Elena flow with service context and retain the visible launcher', () => {
+  assert.match(page, /const openElena = \(service: string\) =>/);
+  assert.match(page, /setQuoteService\(service\)/);
   assert.match(page, /setChatOpen\(true\)/);
   assert.match(page, /showLauncher=\{true\}/);
-  assert.match(visual, /onClick=\{onTalk\}/);
+  assert.match(visual, /onBook\(name\)/);
   assert.doesNotMatch(page, /postMessage|addEventListener\('message'/);
 });
 
@@ -59,24 +56,24 @@ test('metadata and original framing security configuration remain intact', () =>
   assert.ok(experience.headers.some(h => h.key === 'X-Frame-Options' && h.value === 'SAMEORIGIN'));
 });
 
-test('specified palette, blend masks, responsive accordion, keyboard navigation and reduced motion are present', () => {
-  for (const color of ['#f24d29', '#c63d25', '#963222', '#691c10']) assert.ok(css.includes(color), color);
-  for (const mode of ['overlay', 'screen', 'multiply']) assert.ok(css.includes(`mix-blend-mode:${mode}`), mode);
+test('Runway preserves depth blur, mobile diagonal motion, numbered pins, keyboard navigation and native detail dialog', () => {
+  for (const color of ['#0d1b2d', '#f7f5ef', '#b49a66']) assert.ok(css.includes(color), color);
   assert.match(css, /prefers-reduced-motion:reduce/);
-  assert.match(visual, /useReducedMotion/);
-  assert.match(visual, /onFocus=\{\(\) => setActive\(index\)\}/);
-  assert.match(visual, /aria-expanded=\{active === index\}/);
-  assert.match(visual, /event.key === 'Escape'/);
-  assert.match(visual, /event.key === 'Tab'/);
-  assert.match(css, /flex-direction:column;height:75vh/);
+  assert.match(visual, /prefers-reduced-motion: reduce/);
+  assert.match(visual, /mobile \? \(1 - depth\) \* -70 \+ x \* -\.20/);
+  assert.match(visual, /blur\(\$\{blur\}px\)/);
+  assert.match(visual, /e\.key === 'ArrowRight'/);
+  assert.match(visual, /onPointerMove/);
+  assert.match(visual, /onPointerUp/);
+  assert.match(visual, /data-pin/);
+  assert.match(visual, /showModal\(\)/);
+  assert.match(visual, /aria-labelledby="service-detail-title"/);
+  assert.match(css, /scroll-snap-type:x mandatory/);
 });
 
-test('idle visual journey continues automatically without a pause control and pauses for Elena', () => {
-  assert.match(visual, /useIdleTour\(\{ enabled: reduce === false, paused: chatOpen \}\)/);
-  assert.doesNotMatch(visual, /Pause motion|Play motion|Pause automatic tour|Resume automatic tour|data-idle-tour-control/);
-  assert.doesNotMatch(css, /tourControl/);
-  assert.match(visual, /setActive\(current => \(current \+ 1\) % works.length\)/);
-  assert.match(visual, /document\.hidden/);
-  assert.match(visual, /video\.pause\(\)/);
-  assert.match(visual, /\.chat-drawer, #outbox-menu/);
+test('Runway starts immediately at five-second intervals, has no pause control and holds for Elena or details', () => {
+  assert.match(visual, /setTimeout\(\(\) => go\(Math\.round\(target\.current\) \+ 1\), 5000\)/);
+  assert.match(visual, /if \(detail !== null \|\| chatOpen \|\| dragging\) return/);
+  assert.doesNotMatch(visual, /Pause motion|Play motion|Pause automatic tour|Resume automatic tour|data-idle-tour-control|IntersectionObserver|useIdleTour/);
+  assert.match(css, /animation:fill 5s linear forwards/);
 });
