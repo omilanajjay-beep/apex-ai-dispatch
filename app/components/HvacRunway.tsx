@@ -104,10 +104,9 @@ export default function HvacRunway({ onBook, chatOpen }: { onBook: (service: str
         <div className={styles.heading}><div><p className={styles.eyebrow}>THE APEX COMFORT COLLECTION</p><h1>Feel the difference.</h1><p className={styles.subtitle}>Six ways to make home feel right. Explore your next step.</p></div><span className={styles.counter}>{number(index)} <i>/ 06</i></span></div>
         <div className={`${styles.stage} ${dragging ? styles.dragging : ''}`} ref={stage} tabIndex={0} role="region" aria-roledescription="carousel" aria-label="HVAC services — use left and right arrow keys or swipe"
           onKeyDown={e => { if (e.target !== e.currentTarget) return; if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); go(Math.round(target.current) + (e.key === 'ArrowRight' ? 1 : -1)); } if (e.key === 'Home') { e.preventDefault(); go(0); } if (e.key === 'End') { e.preventDefault(); select(5); } }}
-          onPointerDown={e => { if (e.button !== 0 || (e.target as HTMLElement).closest('[data-pin]')) return; pointer.current = { x: e.clientX, y: e.clientY, target: target.current, moved: false }; suppressClick.current = false; }}
+          onPointerDown={e => { if (e.button !== 0) return; pointer.current = { x: e.clientX, y: e.clientY, target: target.current, moved: false }; suppressClick.current = false; }}
           onPointerMove={e => {
-            const pin = (e.target as HTMLElement).closest('[data-pin]');
-            setCursor({ x: e.clientX, y: e.clientY, visible: e.pointerType === 'mouse', view: !!pin || !!(e.target as HTMLElement).closest('[data-active="true"]') });
+            setCursor({ x: e.clientX, y: e.clientY, visible: e.pointerType === 'mouse', view: !!(e.target as HTMLElement).closest('[data-active="true"]') });
             const p = pointer.current; if (!p) return;
             const dx = e.clientX - p.x;
             if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(e.clientY - p.y)) { p.moved = true; setDragging(true); suppressClick.current = true; stage.current?.setPointerCapture(e.pointerId); target.current = p.target - dx / Math.max(130, (stage.current?.clientWidth || 800) * .24); }
@@ -122,7 +121,6 @@ export default function HvacRunway({ onBook, chatOpen }: { onBook: (service: str
               <picture><source media="(max-width: 749px)" srcSet={`/hvac-runway/${service.image}-640.webp`} /><img src={`/hvac-runway/${service.image}-1000.webp`} alt={service.alt} width={640} height={640} draggable={false} loading={i === 0 || i === 1 || i === 5 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} /></picture>
               <span className={styles.imageCaption}>{number(i)} / {service.category}</span>
             </button>
-            {i === index && <div className={styles.pins}>{service.steps.map((title, n) => <button key={title} data-pin className={styles.pin} style={{ left: `${24 + n * 25}%`, top: `${39 + (n % 2) * 19}%` }} aria-label={`${n + 1}: ${title}`} onClick={e => { e.stopPropagation(); openDetail(n); }}>{n + 1}</button>)}</div>}
           </div>)}
           <p className={styles.dragHint}>DRAG TO EXPLORE <span>↔</span> SELECT TO DISCOVER</p>
         </div>

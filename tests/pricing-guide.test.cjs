@@ -56,7 +56,7 @@ test('metadata and original framing security configuration remain intact', () =>
   assert.ok(experience.headers.some(h => h.key === 'X-Frame-Options' && h.value === 'SAMEORIGIN'));
 });
 
-test('Runway preserves depth blur, mobile diagonal motion, numbered pins, keyboard navigation and native detail dialog', () => {
+test('Runway preserves depth blur, mobile diagonal motion, unobstructed service photos, keyboard navigation and native detail dialog', () => {
   for (const color of ['#0d1b2d', '#f7f5ef', '#b49a66']) assert.ok(css.includes(color), color);
   assert.match(css, /prefers-reduced-motion:reduce/);
   assert.match(visual, /prefers-reduced-motion: reduce/);
@@ -65,7 +65,8 @@ test('Runway preserves depth blur, mobile diagonal motion, numbered pins, keyboa
   assert.match(visual, /e\.key === 'ArrowRight'/);
   assert.match(visual, /onPointerMove/);
   assert.match(visual, /onPointerUp/);
-  assert.match(visual, /data-pin/);
+  assert.doesNotMatch(visual, /data-pin|className=\{styles\.pin\}/);
+  assert.match(visual, /className=\{styles\.ticks\}/);
   assert.match(visual, /showModal\(\)/);
   assert.match(visual, /aria-labelledby="service-detail-title"/);
   assert.match(css, /scroll-snap-type:x mandatory/);
